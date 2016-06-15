@@ -31,10 +31,9 @@ def is_below_boundary(x, y, x_div, y_div, slope, intercept, x_max):
 def is_below_boundary_table(x, y, x_div, y_div, slope, intercept, x_max):
     """Return True if point lies within x_div y_div or if it lies 
     under line with given slope and intercept"""
-    cond1 = (x < x_div) & (y > y_div)
-    cond2 = (x > x_div) & (y > slope*x + intercept)
-    cond3 = x > x_max
-    q, = np.where(cond1 ^ cond2 ^ cond3)
+    cond1 = (x < x_div) & (y < y_div)
+    cond2 = (x > x_div) & (y < slope*x + intercept) & (x < x_max)
+    q, = np.where(cond1 ^ cond2)
     return q
 
 def lies_within(x_min, x_max, y_min, y_max,
