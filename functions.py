@@ -94,9 +94,12 @@ def mask_it(catalog):
     return catalog
 
 def mask_it_table(catalog):
-    """Make mask =1 if inside diffraction spike or boundary"""  
+    """Make mask =1 if inside diffraction spike or boundary or fake"""  
     val = np.ones(len(catalog))
-    val[np.where((catalog['IN_BOUNDARY'] == 1) & (catalog['IN_DIFF_MASK'] == 0))] = 0
+    c1 = (catalog['IN_BOUNDARY'] == 1) 
+    c2 = (catalog['IN_DIFF_MASK'] == 0)
+    c3 = (catalog['IS_FAKE'] == 0)
+    val[np.where(c1 & c2 & c3)] = 0
     col = Column(val, name='IN_MASK', 
                  description="Inside a masked region", dtype=int)
     catalog.add_column(col)
