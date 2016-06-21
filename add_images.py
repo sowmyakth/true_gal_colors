@@ -40,11 +40,11 @@ def add_images():
 		final_var = np.sum(var_data,axis=0)
 		final_wht = 1/final_var
 		final_rms = final_var**0.5
-		new_name = path+'/added'+'/EGS_10134_'+ id +'_acs_wfc_'+'_30mas_unrot_added_drz.fits'
+		new_name = path+'/added'+'/EGS_10134_'+ id +'_acs_wfc_30mas_unrot_added_drz.fits'
 		pyfits.writeto(new_name, final_im)
-		new_name = path+'/added'+'/EGS_10134_'+ id +'_acs_wfc_'+'_30mas_unrot_added_wht.fits'
+		new_name = path+'/added'+'/EGS_10134_'+ id +'_acs_wfc_30mas_unrot_added_wht.fits'
 		pyfits.writeto(new_name, final_wht)
-		new_name = path+'/added'+'/EGS_10134_'+ id +'_acs_wfc_'+'_30mas_unrot_added_rms.fits'
+		new_name = path+'/added'+'/EGS_10134_'+ id +'_acs_wfc_30mas_unrot_added_rms.fits'
 		pyfits.writeto(new_name, final_rms)
 	
 if __name__ == '__main__':

@@ -4,10 +4,11 @@ import numpy as np
 
 def make_reg():
     """Make region file to identify objects in ds9"""
-    seg = '0a'
-    filter1 = 'f606w'
-    main_path='/nfs/slac/g/ki/ki19/deuce/AEGIS/testing/'+ seg +'_new/'
-    header1 ='# Filename: acisf01712N003_evt2.fits[EVENTS] \n'
+    seg = '01'
+    filter1 = 'f814w'
+    main_path='/nfs/slac/g/ki/ki19/deuce/AEGIS/testing/zero_pt/comb_det/'+ seg +'/'
+    main_file = 'EGS_10134_'+ seg +'_acs_wfc_30mas_unrot_added_drz.fits'
+    header1 ='# Filename:' + main_file + '\n'
     header2 ='global color=green dashlist=8 3 width=1 font="helvetica 10 normal" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1 \n'
     header3 = 'physical\n'
     bt_seg_file = main_path + filter1 + '_bright_seg_map.fits'

@@ -143,14 +143,14 @@ def get_subImage(x0,y0, L, image,
     return sub
 def get_subImage_pyfits(x0,y0, L, image,
                  out_dir, out_name, save_img=False):
-
+    """Height and width of postage stamp different"""
     f = pyfits.open(image)
     img = f[0].data
     f.close()
-    xmin = int(x0 - L/2.)
-    xmax = xmin + L
-    ymin = int(y0 - L/2.)
-    ymax = ymin + L
+    xmin = int(x0 - L[0]/2.)
+    xmax = xmin + L[0]
+    ymin = int(y0 - L[1]/2.)
+    ymax = ymin + L[1]
     sub_img = img[ymin:ymax, xmin:xmax]
     if save_img:
         try:
