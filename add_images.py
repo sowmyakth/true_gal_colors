@@ -20,10 +20,10 @@ def add_images():
 	file_name = path+'seg_ids.txt'
 	all_seg_ids = np.loadtxt(file_name, delimiter=" ",dtype='S2')
 	#all_seg_ids=['01']
-	filters = ['f606w', 'f814w']
-	im_data=[]
-	var_data=[]
+	filters = ['f606w', 'f814w']	
 	for id in all_seg_ids:
+		im_data=[]
+		var_data=[]
 		for f in filters:
 			file_name = path + f +'/EGS_10134_'+ id +'_acs_wfc_'+f+'_30mas_unrot_wht.fits'
 			hdu1 = pyfits.open(file_name)

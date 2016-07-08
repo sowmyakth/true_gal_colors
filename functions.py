@@ -99,7 +99,8 @@ def mask_it_table(catalog):
     c1 = (catalog['IN_BOUNDARY'] == 1) 
     c2 = (catalog['IN_DIFF_MASK'] == 0)
     c3 = (catalog['IS_FAKE'] == 0)
-    val[np.where(c1 & c2 & c3)] = 0
+    c4 = (catalog['IN_MANUAL_MASK'] == 0)
+    val[np.where(c1 & c2 & c3 & c4)] = 0
     col = Column(val, name='IN_MASK', 
                  description="Inside a masked region", dtype=int)
     catalog.add_column(col)
