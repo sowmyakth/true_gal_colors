@@ -23,12 +23,12 @@ def run_batch():
     for fl in glob.glob('outfile/out_*'):
         os.remove(fl)
     file_name ='/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/seg_ids.txt'
-    #all_seg_ids = np.loadtxt(file_name, delimiter=" ",dtype='S2')
-    all_seg_ids = ['01']#, '02', '04', '0a'] 
+    all_seg_ids = np.loadtxt(file_name, delimiter=" ",dtype='S2')
+    #all_seg_ids = ['01']#, '02', '04', '0a'] 
     for seg_id in all_seg_ids:
         print 'SEG ID ', seg_id
         outfile = 'outfile/out_{0}.txt'.format(seg_id)
-        com1 = '/nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_training_sample'
+        com1 = '/nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_training_sample/'
         com2 = 'python get_objects.py --out_path='+ com1
         final_args =['bsub', '-W' , '1:40', '-o', outfile , com2 ]
         final_args.append('--wht_name=EGS_10134_seg_id_acs_wfc_filter_30mas_unrot_rms.fits')

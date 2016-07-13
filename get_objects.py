@@ -390,7 +390,7 @@ class GalaxyCatalog:
             #add columns to catalog that will be useful later
             col= Column(np.zeros(len(catalog)),name='MULTI_DET',dtype='int', description = 'detected in another segment' )
             catalog.add_column(col)
-            col= Column(['0.0']*len(catalog),name='MULTI_DET_OBJ',dtype='string', description = 'object id kept' )
+            col= Column(['aa.0000000']*len(catalog),name='MULTI_DET_OBJ',dtype='S12', description = 'object id kept' )
             catalog.add_column(col)
             col= Column([filt.upper()]*len(catalog) ,name='BAND', description = 'measurement filter' )
             catalog.add_column(col)
