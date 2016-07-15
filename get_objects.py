@@ -14,6 +14,7 @@ import pyfits
 import os
 import numpy as np
 import functions as fn
+import clean_pstamp as cp
 #import get_focus as focus
 
 #import ipdb; ipdb.set_trace() 
@@ -465,6 +466,15 @@ class GalaxyCatalog:
                 y0 =  matched_stars[i][2]
                 stamp_size =  matched_stars[i][3]*6
                 image = self.params.data_files[filter]
+                seg_name = out_dir + '/'+ filt +'_comb_seg_map.fits'
+                seg_map = pyfits.open()[0].data
+                seg_im = fn.get_subImage(int(x0), int(y0), int(stamp_size), seg_map,
+                                      None, None, save_img=False)
+                shape = seg_im.shape
+                num = seg_im[shape[0]/2, shape[1]/2]
+                im, bl, oth, oth_segs, check = cp.div_pixels(seg_im, num)
+                if len(oth_segs)>0:
+                    continue
                 dir_star = out_dir+'/stars/'
                 out_name = filter+'_' + str(int(matched_stars[i][0]))
                 sub = fn.get_subImage(int(x0), int(y0), int(stamp_size), image,
