@@ -106,6 +106,8 @@ def run(params):
 
             seg_name = out_dir + filter +'_comb_seg_map.fits'
             seg_image = fn.get_subImage_pyfits(x0,y0, stamp_size, seg_name, None, None, save_img=False)
+            if catalogs[f]['IS_BRIGHT'][int(i)]==1:
+                seg_image = seg_expand(seg_image,  buff=10, val=int(i)+1, set_to=int(i)+1)
             
 
             for header_param in header_params:
