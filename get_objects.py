@@ -35,6 +35,7 @@ class Main_param:
         self.sf = args.sf
         self.wht_type = args.wht_type
         self.manual_mask_file = args.manual_mask_file
+        self.buffer = args.buffer
         ## making weight maps rms
         if args.file_path[-1] != '/':
             self.file_path = args.file_path+'/'
@@ -211,7 +212,7 @@ class GalaxyCatalog:
 
     def make_new_seg(self, seg_map, out_dir, out_name):
         data = pyfits.open(seg_map)[0].data
-        new_seg = fn.seg_expand(data, buff=20)
+        new_seg = fn.seg_expand(data, buff=self.params.buffer)
         new_name = out_dir + '/' + out_name+ "_bright_seg_map_new.fits"
         if os.path.isfile(new_name) is True:
                 subprocess.call(["rm", new_name])
@@ -582,6 +583,8 @@ if __name__ == '__main__':
                         help="Weight file name of image of image used in detction")  
     parser.add_argument('--wht_type', default='MAP_WEIGHT',
                         help="Weight file type")
+    parser.add_argument('--buffer', default=10,
+                        help="Number of pixels used as buffer around bright objects")
     parser.add_argument('--seg_id', default='1a',
                         help="Segment id to run [Default:1a]")
     parser.add_argument('--tt_file_path', default='/nfs/slac/g/ki/ki19/deuce/AEGIS/tt_starfield/',
