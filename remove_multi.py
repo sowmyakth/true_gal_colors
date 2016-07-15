@@ -12,7 +12,6 @@ def main(args):
             tree=spatial.KDTree(zip(cat['ALPHA_SKY'][q1], cat['DELTA_SKY'][q1]))
             check_segs.remove(seg)
             for check_seg in check_segs:
-                print seg, check_seg
                 ch_cat_name = args.main_path + check_seg + '/' + filt + '_clean.cat'
                 ch_cat = Table.read(ch_cat_name, format= 'ascii.basic')
                 q2, = np.where(ch_cat['IN_MASK'] == 0)
@@ -26,16 +25,18 @@ def main(args):
                 ch_q, = np.where(s[0]!= np.inf)
                 if len(ch_q)==0:
                     continue
+                print "Detected duplicate objects: ", seg, check_seg
                 q = s[1][ch_q]
                 #If the object in check seg is worse
                 cond1 = list(cat['FLAGS'][q] < ch_cat['FLAGS'][ch_q])
                 cond2 = list(cat['SNR'][q] > ch_cat['SNR'][ch_q])
                 multi, = np.where(cond1 or cond2)
-                ch_cat['MULTI_DET'][ch_q][multi] = 1
+                ids = np.array(ch_q[multi], dtype='int')
+                ch_cat['MULTI_DET'][ids] = 1
                 obj= [seg + '.'+ str(cat['NUMBER'][q][num]) for num in multi]
-                print multi, obj
-                ch_cat['MULTI_DET_OBJ'][ch_q][multi] = obj
-                print ch_cat['MULTI_DET_OBJ'][ch_q][multi]
+                print multi, ids                
+                ch_cat['MULTI_DET_OBJ'][ids] = obj
+                print ch_cat['MULTI_DET_OBJ'][ids]
                 q = np.delete(q, multi)
                 ch_q = np.delete(ch_q, multi)
 
