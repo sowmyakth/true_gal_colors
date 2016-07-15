@@ -70,8 +70,11 @@ def get_blank_reg(x_r, y_r,
     bls = Table.read(bl_files, format='ascii.basic')
     # get all blank regions larger than required size
     q, = np.where((bls['XSIZE']>=x_r) & (bls['YSIZE']>=y_r) & (bls['FILTER'] == filt) )
-    #print 'q', q
-    bl = q[np.random.randint(len(q))]
+    try :
+        bl = q[0]
+        print 'empty region from file: ' , bls['FILE'][bl]
+    except ValueError:
+        print("Region to replace is larger than empty sky")
     xmin, xmax = bls['XMIN'][bl], bls['XMAX'][bl] 
     ymin, ymax = bls['YMIN'][bl], bls['YMAX'][bl]
     hdu = pyfits.open(bls['FILE'][bl])
@@ -107,7 +110,7 @@ def change_others(arr, to_change,
     #print bl_dat.shape
     #print len(to_change)
     bl_pixels = [bl_dat[bl_change[i,0], bl_change[i,1]] for i in range(len(bl_change))]
-    bl_mean, bl_std = get_stats(np.array(bl_pixels))
+    bl_mean, bl_std = get_stats(np.array(bl_pixels), str='Empty Region')
     bl_dat = bl_dat/bl_std*b_std    
     ### change pixels of oth in arr to blank value
     for p in range(len(to_change)):
@@ -115,12 +118,14 @@ def change_others(arr, to_change,
     return arr
 
 
-def get_stats(arr):
+def get_stats(arr ,str=None):
     mean = np.mean(arr)
     t2 = arr - mean
     std = np.std(arr)
     t3 = np.sort(arr)
     #diff1s = arr[t3[round(0.84*len(t3))]] - arr[t3[round(0.16*len(t3))]]
+    if str:
+        print 'Measuring', str
     print 'STATS: mean= ',mean, ' stdev=', std#,diff1s
     return mean, std
 
@@ -131,25 +136,22 @@ def clean_pstamp(args):
         hdu1 = pyfits.open(params.gal_files[f1])
         hdu2 = pyfits.open(params.seg_files[f1])
         im_dat = hdu1[0].data
+        im_hdr = hdu1[0].header
         seg_dat = hdu2[0].data
         hdu1.close()
         hdu2.close()
         shape = im_dat.shape       
         x0, y0= shape[0]/2, shape[1]/2
         im, bl, oth, oth_segs, check = div_pixels(seg_dat, params.num)
-        print im, im_dat.shape
-        #print 'Image',im_dat[im]
-        print f1
         peak_val = np.max([[im_dat[im[i][0]][im[i][1]]] for i in range(len(im))])
         #oth_pixels = im[oth[i][0], oth[i][1] for i in range(len(oth))]
         bck_pixels = [im_dat[bl[i][0], bl[i][1]] for i in range(len(bl))]
-        b_mean, b_std = get_stats(np.array(bck_pixels))
+        b_mean, b_std = get_stats(np.array(bck_pixels), str='Image Background')
         if os.path.isdir(params.path + 'stamp_stats') is False:
             subprocess.call(["mkdir", params.path + 'stamp_stats'])        
         if check ==1:
             raise AttributeError("Pixel at center isn't main object")
         elif len(oth_segs)==0 :
-            print im
             min_dist = 0.
             min_dist_seg =0.        
             pix_near_dist = [shape[0]/2, shape[1]/2]
@@ -163,23 +165,26 @@ def clean_pstamp(args):
         pix_min_dists = []
         for oth_seg in oth_segs:
             print 'MASKING: ', len(oth[oth_seg]) , ' pixels out of ', seg_dat.size 
+            print " Blank files at", params.blank_file
             dist, pix = get_min_dist(x0,y0, np.array(oth[oth_seg]))
             new_im = change_others(new_im, np.array(oth[oth_seg]), params.blank_file, f1, b_std)
             min_dists.append(dist)
             pix_min_dists.append(pix)
-        print min_dists, pix_min_dists, oth_segs
+            new_im_name = params.path + f1 + '_'+ params.seg_id + '_'+ params.num +'_gal.fits'
+            pyfits.writeto(new_im_name, im_dat, im_hdr, clobber=True)
+        #print min_dists, pix_min_dists, oth_segs
         min_dist = np.min(min_dists)
         pix_near_dist = pix_min_dists[np.argmin(min_dists)]
         avg_flux = get_avg_around_pix(pix_near_dist[0], pix_near_dist[1], im_dat)
-        snr = get_snr(new_im, im_dat, b_std**2)
+        snr = get_snr(new_im, b_std**2)
         info = [b_mean, b_std, np.sum(im_dat), min_dist, avg_flux, peak_val, snr]
-        print info
         np.savetxt(params.path + 'stamp_stats'+'/'+ params.num +'.txt', info)
-        new_im_name = params.path + f1 + '_'+ params.seg_id + '_'+ params.num +'_mod_image.fits'
+        new_im_name = params.path + f1 + '_'+ params.seg_id + '_'+ params.num +'_gal.fits'
         print 'CREATED NEW POSTAGE STAMP', new_im_name
-        pyfits.writeto(new_im_name, new_im, clobber=True)
+        pyfits.writeto(new_im_name, new_im, im_hdr, clobber=True)
+        
 
-def get_snr(img, b_var):
+def get_snr(image_data, b_var):
     img = galsim.Image(image_data)
     try:
         res = galsim.hsm.FindAdaptiveMom(img)
