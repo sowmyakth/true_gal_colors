@@ -1,0 +1,4 @@
+SEG FILTER XMIN XMAX YMIN YMAX XSIZE YSIZE FILE
+1j f606w 2238 2656 3788 4127 418 339 /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f606w/EGS_10134_1j_acs_wfc_f606w_30mas_unrot_drz.fits
+1j f814w 2238 2656 3788 4127 418 339 /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f814w/EGS_10134_1j_acs_wfc_f814w_30mas_unrot_drz.fits
+
