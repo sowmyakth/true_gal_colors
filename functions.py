@@ -218,12 +218,15 @@ def inpoly(px,py,x,y):
     return crossings % 2
 
 
-def set_col_any(arr, buff, set_to):
+def set_col_any(arr, val, buff, set_to):
     """Set the column value to set_to that are within buff of any non zero value in arr"""
     s = arr.shape
     for i in range(s[1]):
         temp = arr[:,i]
-        q, = np.where(temp!=0)
+        if val:
+            q, = np.where(temp==val)
+        else:
+            q, = np.where(temp!=0)
         d = np.array([range(j-buff,j+buff+1) for j in q])
         d = d.reshape(1,d.size)[0]
         d = d[np.where((d>=0) &(d<s[0]))]
@@ -232,11 +235,11 @@ def set_col_any(arr, buff, set_to):
         arr[:,i]=temp
     return arr
 
-def seg_expand(seg, val=0, buff=20, set_to=-1):
+def seg_expand(seg,  buff, val=None, set_to=-1):
     """Expand the seg map by buffering buff pixels around pixel val """
     arr = np.array(seg).copy()
-    temp1 = set_col_any(arr, buff, set_to)
-    temp2 = set_col_any(arr.T, buff, set_to).T
+    temp1 = set_col_any(arr, val, buff, set_to)
+    temp2 = set_col_any(arr.T,val,  buff, set_to).T
     new_seg = np.minimum(temp1, temp2)
     return arr
 
