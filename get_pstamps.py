@@ -64,7 +64,7 @@ def run(params):
     #save catalogs 
     for f,filt in enumerate(params.filters):
         catalogs[f]['IS_PSTAMP'][obj_ids] == 1
-        cat_name = out_dir + '/' + filt + "_clean.cat"
+        cat_name = out_dir + '/' + filt + "_full.cat"
         catalogs[f].write(cat_name, format="ascii.basic")
     #Get postage stamp image of the galaxy in all filters. 
     #Postage stamp size is set by the largest filter image  
