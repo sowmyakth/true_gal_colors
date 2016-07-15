@@ -12,13 +12,11 @@ def main():
     seg_file_name = '/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/seg_ids.txt'
     all_segs = np.loadtxt(seg_file_name, delimiter=" ",dtype='S2')
     for seg in all_segs:
-        print "Running seg ", seg
-        file_path = path + '/'+ seg + '/'+'postage_stamps/'
-        names = glob.glob(file_path + filters[0] + '_'+ '*_iamge.fits')
-        num = []
-        for name in names:
-            id = name[6:8]
-            num.append(id)
+        file_path = path +  seg + '/'+'postage_stamps/'
+        names = glob.glob(file_path + filters[0] + '*_image.fits')
+        names = [names[i].replace(file_path, '') for i in range(len(names))]
+        names = [names[i].replace(filters[0] + '_'+ seg + '_', '') for i in range(len(names))]
+        num = [names[i].replace('_image.fits', '') for i in range(len(names))]
         num_name = path + '/'+ seg + '/objects_with_p_stamps.txt'
         np.savetxt(num_name, num, delimiter=" ", fmt="%s")
 
