@@ -84,15 +84,6 @@ def renumber_table(catalog):
     catalog.add_column(col)
     return catalog
 
-def mask_it(catalog):
-    """Make mask =1 if inside diffraction spike or boundary"""   
-    for i in range(catalog.nrows):
-        catalog['IN_MASK'][i] = 1
-        if (catalog['IN_BOUNDARY'][i] == 1) and \
-           (catalog['IN_DIFF_MASK'][i] == 0):
-           catalog['IN_MASK'][i] = 0
-    return catalog
-
 def mask_it_table(catalog):
     """Make mask =1 if inside diffraction spike or boundary or fake"""  
     val = np.ones(len(catalog))

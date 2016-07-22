@@ -39,7 +39,8 @@ def run(params):
             cond2 = (catalogs[f]['IN_MASK'][i] == 0)
             cond3 = (catalogs[f]['SNR'][i] >= 4.5)
             cond4 = (catalogs[f]['MULTI_DET'][i] == 0)
-            if  cond1 and cond2 and cond3 and cond4 :
+            cond5 = (catalogs[f]['MAG_AUTO'][i] >= 25.2)
+            if  cond1 and cond2 and cond3 and cond4 and cond5:
                 t = (catalogs[f]['THETA_IMAGE'][int(i)])*np.pi/180.
                 e = catalogs[f]['ELLIPTICITY'][int(i)]
                 A = 2.5*(catalogs[f]['A_IMAGE'][int(i)])*(catalogs[f]['KRON_RADIUS'][int(i)])
@@ -63,7 +64,7 @@ def run(params):
     np.savetxt(out_dir+'objects_with_p_stamps.txt', obj_ids, fmt="%i")
     #save catalogs 
     for f,filt in enumerate(params.filters):
-        catalogs[f]['IS_PSTAMP'][obj_ids] == 1
+        catalogs[f]['IS_PSTAMP'][obj_ids] = 1
         cat_name = out_dir + '/' + filt + "_full.cat"
         catalogs[f].write(cat_name, format="ascii.basic")
     #Get postage stamp image of the galaxy in all filters. 

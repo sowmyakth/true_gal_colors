@@ -221,8 +221,8 @@ def plot_focus_num_stars(params):
 def get_psf(args):
     bad_stars = get_bad_stars(args)
     params = Main_param(args, bad_stars[args.seg_id])
-    plot_focus_num_stars(params)
-    focus = get_focus(params)
+    #plot_focus_num_stars(params)
+    #focus = get_focus(params)
     #print "Getting postage stamps"
     gps.run(params)
             

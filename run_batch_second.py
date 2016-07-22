@@ -21,7 +21,7 @@ def main():
     file_name ='/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/seg_ids.txt'
     all_seg_ids = np.loadtxt(file_name, delimiter=" ",dtype='S2')
     #all_seg_ids = ['07','08','16','07','08','0x','16','19']
-    #all_seg_ids = ['04'] 
+    #all_seg_ids = ['02', '13'] 
     for seg_id in all_seg_ids:
         print 'SEG ID ', seg_id
         path='/nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_training_sample/'
