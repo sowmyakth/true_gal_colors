@@ -201,39 +201,17 @@ def plot_focus_num_stars(params):
         np.savetxt(out_dir + filter+"_cost_fn.txt", cost_fn)
         np.savetxt(out_dir + filter+"_focus_with_num_stars.txt", focus)
         print focus.T
-        #print focus.shape
-        #print type(focus.T[0][1])
-        #print type(focus.T[1][1])
-        #plt.figure(figsize=[10,10])
-        #plt.scatter(focus.T[0], focus.T[1])
-        #plt.xlabel('Number of stars')
-        #plt.ylabel('Focus')
-        #plt.title('Variation of focus with number of stars used ({0})'.format(filter))
-        #plt.savefig(filter+'_focus_num_stars1.png')
-
-
-
-
-
 
 
 
 def get_psf(args):
     bad_stars = get_bad_stars(args)
     params = Main_param(args, bad_stars[args.seg_id])
-    #plot_focus_num_stars(params)
-    #focus = get_focus(params)
-    #print "Getting postage stamps"
+    plot_focus_num_stars(params)
+    focus = get_focus(params)
+    print "Getting postage stamps"
     gps.run(params)
             
-
-            
-
-
-
-            #rs.run_segment(params)
-
-
 
 if __name__ == '__main__':
     import subprocess
@@ -276,6 +254,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     get_psf(args)
-        
-# to do
-# make list of all ids
+

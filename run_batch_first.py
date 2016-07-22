@@ -24,7 +24,7 @@ def run_batch():
         os.remove(fl)
     file_name ='/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/seg_ids.txt'
     all_seg_ids = np.loadtxt(file_name, delimiter=" ",dtype='S2')
-    #all_seg_ids = ['01']#, '02', '04', '0a'] 
+    all_seg_ids = ['01']#, '02', '04', '0a'] 
     for seg_id in all_seg_ids:
         print 'SEG ID ', seg_id
         outfile = 'outfile/out_{0}.txt'.format(seg_id)
