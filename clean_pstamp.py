@@ -110,7 +110,7 @@ def change_others(arr, to_change,
     #print bl_dat.shape
     #print len(to_change)
     bl_pixels = [bl_dat[bl_change[i,0], bl_change[i,1]] for i in range(len(bl_change))]
-    bl_mean, bl_std = get_stats(np.array(bl_pixels), str='Empty Region')
+    bl_mean, bl_std = get_stats(np.array(bl_pixels), str='Blank Region')
     bl_dat = bl_dat/bl_std*b_std    
     ### change pixels of oth in arr to blank value
     for p in range(len(to_change)):
@@ -133,6 +133,7 @@ def get_stats(arr ,str=None):
 def clean_pstamp(args):
     params = Main_param(args)
     for i, f1 in enumerate(params.filters):
+        print "Running filter", f1
         hdu1 = pyfits.open(params.gal_files[f1])
         hdu2 = pyfits.open(params.seg_files[f1])
         im_dat = hdu1[0].data
@@ -152,33 +153,36 @@ def clean_pstamp(args):
         if check ==1:
             raise AttributeError("Pixel at center isn't main object")
         elif len(oth_segs)==0 :
+            print "No other object"
             min_dist = 0.
             min_dist_seg =0.        
             pix_near_dist = [shape[0]/2, shape[1]/2]
             avg_flux = get_avg_around_pix(pix_near_dist[0], pix_near_dist[1], im_dat)
             snr = get_snr(im_dat, b_std**2)
             info = [b_mean, b_std, np.sum(im_dat), min_dist, avg_flux, peak_val, snr ]
-            np.savetxt(params.path + 'stamp_stats'+'/'+ params.num +'.txt', info)
-            sys.exit()
+            np.savetxt(params.path + 'stamp_stats'+'/'+ params.num + '_'+ f1 + '.txt', info)
+            new_im_name = params.path + f1 + '_'+ params.seg_id + '_'+ params.num +'_gal.fits'
+            pyfits.writeto(new_im_name, im_dat, im_hdr, clobber=True)
+            continue
         new_im = im_dat.copy()
         min_dists = []
         pix_min_dists = []
         for oth_seg in oth_segs:
+            print "Other obejct detected with id ", oth_seg
             print 'MASKING: ', len(oth[oth_seg]) , ' pixels out of ', seg_dat.size 
             print " Blank files at", params.blank_file
             dist, pix = get_min_dist(x0,y0, np.array(oth[oth_seg]))
             new_im = change_others(new_im, np.array(oth[oth_seg]), params.blank_file, f1, b_std)
             min_dists.append(dist)
             pix_min_dists.append(pix)
-            new_im_name = params.path + f1 + '_'+ params.seg_id + '_'+ params.num +'_gal.fits'
-            pyfits.writeto(new_im_name, im_dat, im_hdr, clobber=True)
+            
         #print min_dists, pix_min_dists, oth_segs
         min_dist = np.min(min_dists)
         pix_near_dist = pix_min_dists[np.argmin(min_dists)]
         avg_flux = get_avg_around_pix(pix_near_dist[0], pix_near_dist[1], im_dat)
         snr = get_snr(new_im, b_std**2)
         info = [b_mean, b_std, np.sum(im_dat), min_dist, avg_flux, peak_val, snr]
-        np.savetxt(params.path + 'stamp_stats'+'/'+ params.num +'.txt', info)
+        np.savetxt(params.path + 'stamp_stats'+'/'+ params.num + '_'+ f1 + '.txt', info)
         new_im_name = params.path + f1 + '_'+ params.seg_id + '_'+ params.num +'_gal.fits'
         print 'CREATED NEW POSTAGE STAMP', new_im_name
         pyfits.writeto(new_im_name, new_im, im_hdr, clobber=True)
