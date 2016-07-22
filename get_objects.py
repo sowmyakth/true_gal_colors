@@ -495,6 +495,10 @@ class GalaxyCatalog:
         cat = Table.read(cat_name, format='ascii.basic')
         # to account for renumbering
         new_seg = br
+        #Expand bright regions by 10 pixels
+        q, = np.where(cat['IS_BRIGHT']==1)
+        for i in q:
+            new_seg = fn.seg_expand(new_seg, buff=10, val=int(i)+1, set_to=int(i)+1)
         q, = np.where(cat['IS_BRIGHT']==0)
         s = ft.shape 
         for i in q:
@@ -502,11 +506,8 @@ class GalaxyCatalog:
                 pix, = np.where((ft[j,:] == cat['OLD_NUMBER'][i]) & (new_seg[j,:] == 0) )
                 new_seg[j][pix] = cat['NUMBER'][i]+1
         new_seg_name = out_dir + '/'+ filt +'_comb_seg_map.fits'
-        if os.path.isfile(new_seg_name) is True:
-                subprocess.call(["rm", new_seg_name])
         print "Bright faint combined seg map created at", new_seg_name
-        pyfits.writeto(new_seg_name, new_seg)
-
+        pyfits.writeto(new_seg_name, new_seg, clobber=True)
 
     def generate_catalog(self):
         if os.path.isdir(self.params.out_path) is False:
