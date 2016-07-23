@@ -16,9 +16,6 @@ import numpy as np
 import glob
 import os
 
-
-
-
 def run_batch():
     for fl in glob.glob('outfile/out_1_*'):
         os.remove(fl)

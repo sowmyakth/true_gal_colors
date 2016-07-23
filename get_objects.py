@@ -62,8 +62,6 @@ class Main_param:
             self.tt_file_name[focus] = args.tt_file_name.replace('focus', 'f'+str(focus))
 
 
-
-
 def run_segment(params):
     """Find objects in individual segments.
         Detecting objects:
@@ -100,9 +98,7 @@ def run_segment(params):
         """
     #import ipdb; ipdb.set_trace() 
     cat = GalaxyCatalog(params)
-    cat.generate_catalog()
-
-    
+    cat.generate_catalog()    
 
 class GalaxyCatalog:
     
@@ -154,7 +150,6 @@ class GalaxyCatalog:
     def __init__(self,params):
         self.params = params
 
-
     def get_sex_op_params(self, out_dir):
         ##### Saves the names of parameters thet sextractor must save
         param_fname = 'sex_out.param'
@@ -169,7 +164,6 @@ class GalaxyCatalog:
             param_file.write("\n")
         param_file.close()
         
-
     def run_sextractor_dual(self, data_files, wht_files,
                             use_dict,out_dir, out_name, filter):
         """ Runs sextractor in dual mode"""
@@ -200,8 +194,7 @@ class GalaxyCatalog:
         config_ascii[1][row_counter+3] = self.params.gain[filter]
         config_fname =  out_dir+ '/'+ out_name + ".config"
         #config_ascii.writeto(config_fname)
-        config_ascii.writeto(config_fname)
-                
+        config_ascii.writeto(config_fname)               
         #Run sextractor and get the catalog
         subprocess.call(["sex", data_files[0],",",data_files[1] , "-c", config_fname])
 
@@ -311,7 +304,6 @@ class GalaxyCatalog:
         y_vertex_sets = []
         print "Identifying diffraction spikes"
         val=np.zeros(len(catalog))
-
         col = Column(val, name='IN_DIFF_MASK', 
                  description="Close to saturated star", dtype=int)
         catalog.add_column(col)
@@ -322,13 +314,11 @@ class GalaxyCatalog:
         if len(q)==0:
             print 'No saturated objects found'
             return catalog
-
         x0 = catalog['X_IMAGE'][q]
         y0 = catalog['Y_IMAGE'][q]
         r = np.mean([catalog['A_IMAGE'][q],catalog['B_IMAGE'][q]])
         flux = catalog['FLUX_AUTO'][q]
         l = m*flux + b
-
         x_vertices = np.array([x0-w,x0-w,x0+w,x0+w,x0+r,x0+l,x0+l,x0+r,x0+w,x0+w,x0-w,x0-w,x0-r,x0-l,x0-l,x0-r])
         y_vertices = np.array([y0+r,y0+l,y0+l,y0+r,y0+w,y0+w,y0-w,y0-w,y0-r,y0-l,y0-l,y0-r,y0-w,y0-w,y0+w,y0+w])
         (x_vertices, y_vertices) = fn.rotate_table(x_vertices,y_vertices,x0,y0,theta)
@@ -373,8 +363,6 @@ class GalaxyCatalog:
                     if max(bools) == 1:
                         catalog['IN_MANUAL_MASK'][i]=1
             return catalog
-
-#########################
 
     def cleanup_catalog(self, out_dir):
         """Removes objects on boundaries, diffraction spikes, manual mask"""
@@ -492,13 +480,13 @@ class GalaxyCatalog:
         ft = hdu2[0].data 
         hdu2.close()
         hdu1.close()
-        cat = Table.read(cat_name, format='ascii.basic')
-        # to account for renumbering
+        cat = Table.read(cat_name, format='ascii.basic')        
         new_seg = br
         #Expand bright regions by 10 pixels
         q, = np.where(cat['IS_BRIGHT']==1)
         for i in q:
             new_seg = fn.seg_expand(new_seg, buff=10, val=int(i)+1, set_to=int(i)+1)
+            # +1 to account for renumbering
         q, = np.where(cat['IS_BRIGHT']==0)
         s = ft.shape 
         for i in q:
@@ -552,8 +540,6 @@ class GalaxyCatalog:
         self.stars_for_focus(out_dir)
 
 
-
-
 if __name__ == '__main__':
     import subprocess
     import numpy as np
@@ -605,7 +591,6 @@ if __name__ == '__main__':
     parser.add_argument('--focus', default= [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5],
                         help="List containg focus positions that have TT_fields")
     args = parser.parse_args()
-
     params = Main_param(args)
     run_segment(params)
     
