@@ -1,14 +1,4 @@
-#Run this first
-#import glob
-#names = glob.glob('*drz.fits')
-#seg_id=[]
-#for name in names:
-#    id = name[10:12]
-#    seg_id.append(id)
-#np.savetxt('/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/seg_ids.txt', seg_id, delimiter=" ", fmt="%s")
-#
-
-
+####### Run remove multi.py before this"
 import subprocess
 import numpy as np
 import glob
@@ -20,11 +10,9 @@ def main():
         os.remove(fl)
     file_name ='/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/seg_ids.txt'
     all_seg_ids = np.loadtxt(file_name, delimiter=" ",dtype='S2')
-    #all_seg_ids = ['07','08','16','07','08','0x','16','19']
-    #all_seg_ids = ['02', '13'] 
     for seg_id in all_seg_ids:
         print 'SEG ID ', seg_id
-        path='/nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_training_sample/'
+        path='/nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_full/'
         outfile = 'outfile/out_2_{0}.txt'.format(seg_id)
         com2 = 'python get_psf.py --out_path='+ path
         final_args =['bsub', '-W' , '0:55', '-o', outfile , com2 ]        
