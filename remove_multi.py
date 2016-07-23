@@ -9,13 +9,17 @@ def main(args):
             cat_name = args.main_path + seg + '/' + filt + '_clean.cat'
             cat = Table.read(cat_name, format= 'ascii.basic')
             q1, = np.where(cat['IN_MASK'] == 0)
-            tree=spatial.KDTree(zip(cat['ALPHA_SKY'][q1], cat['DELTA_SKY'][q1]))
+            x = cat['ALPHA_SKY'][q1]*np.cos(np.radians(cat['DELTA_SKY'][q1]))
+            y = cat['DELTA_SKY'][q1]
+            tree=spatial.KDTree(zip(x, y))
             check_segs.remove(seg)
             for check_seg in check_segs:
                 ch_cat_name = args.main_path + check_seg + '/' + filt + '_clean.cat'
                 ch_cat = Table.read(ch_cat_name, format= 'ascii.basic')
                 q2, = np.where(ch_cat['IN_MASK'] == 0)
-                pts = zip(ch_cat['ALPHA_SKY'][q2], ch_cat['DELTA_SKY'][q2])
+                x = ch_cat['ALPHA_SKY'][q2]*np.cos(np.radians(ch_cat['DELTA_SKY'][q2]))
+                y = ch_cat['DELTA_SKY'][q2]
+                pts = zip(x, y)
                 #ch_tree = spatial.KDTree(zip(ch_cat['ALPHA_SKY'][q2], ch_cat['DELTA_SKY'][q2]))
                 #s = tree.query_ball_tree(ch_tree,args.tolerance)
                 #q,= np.where((np.array(t) != 1) & (np.array(t) != 0 ))
@@ -59,7 +63,7 @@ if __name__ == '__main__':
     parser.add_argument('--filter_names', default= ['f606w','f814w'],
                         help="names of filters [Default: ['f606w','f814w']]")
     parser.add_argument('--main_path',
-                        default = '/nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_training_sample/')
+                        default = '/nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_full/')
     parser.add_argument('--seg_file_name', default ='/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/seg_ids.txt',
                         help="file with all seg id names" )
     parser.add_argument('--tolerance', type=float, default=1/1800.,
@@ -68,22 +72,3 @@ if __name__ == '__main__':
     main(args)
 
 
-
-
-    """
-#If the object in detction seg is worse
-                multi, = np.where(cat['FLAGS'][q1]>ch_cat['FLAGS'][ch_q])
-                cat['MULTI_DET'][q][multi] = 1
-                obj= [check_seg + '.'+ strch_cat['NUMBER'][ch_q][num] for num in multi]
-                cat['MULTI_DET_OBJ'][q][multi] = obj
-                #If the object in check seg is worse
-                multi, = np.where(cat['FLAGS'][q1]<ch_cat['FLAGS'][ch_q])
-                ch_cat['MULTI_DET'][ch_q][multi] = 1
-                obj= [seg + '.'+ cat['NUMBER'][q][num] for num in multi]
-                ch_cat['MULTI_DET_OBJ'][ch_q][multi] = obj
-                x, = np.where(cat['FLAGS'][q1] = ch_cat['FLAGS'][ch_q])
-                multi, = np.where(cat['SNR'][q1][x] >= ch_cat['SNR'][ch_q][x])
-                ch_cat['MULTI_DET'][ch_q][x][multi] = 1
-                obj= [seg + '.'+ cat['NUMBER'][q][x][num] for num in multi]
-                ch_cat['MULTI_DET_OBJ'][ch_q][q][multi] = obj
-                ch_cat.write(ch_cat_name, format='ascii.basic')"""
