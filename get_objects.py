@@ -91,10 +91,6 @@ def run_segment(params):
         Merge the bright and filtered faint catologs to give catalog of 
         all objects
 
-
-
-        Manual Mask?????????
-
         """
     #import ipdb; ipdb.set_trace() 
     cat = GalaxyCatalog(params)
@@ -387,7 +383,20 @@ class GalaxyCatalog:
             catalog.write(out_dir + '/' +out_name+ "_clean.cat",format="ascii.basic")
             #### Make combined seg map
             self.combine_seg_map(filt,  out_dir)
-
+   
+    def check_oth_obj(self, x0, y0,r,
+                      filt, idx, out_dir):
+        ## Check multi objects in stamp
+        seg_name = out_dir + '/'+ filt +'_comb_seg_map.fits'
+        seg_im = fn.get_subImage_pyfits(int(x0), int(y0), [int(r)]*8, seg_name,
+                                      None, None, save_img=False)
+        shape = seg_im.shape
+        num = seg_im[shape[0]/2, shape[1]/2]
+        im, bl, oth, oth_segs, check = cp.div_pixels(seg_im, -1)
+        if len(oth_segs)>1:
+            print "Multiple objects in star stamp for star {0}, object{1}".format(idx,oth_segs)
+            return False
+        return True
 
 
     def match_to_tt(self, catalog, out_dir,
@@ -410,7 +419,11 @@ class GalaxyCatalog:
         y01 = y0*mult
         d = ((x1-x01.T)**2+(y1-y01.T)**2)**0.5 
         best = np.argmin(d, axis=1)
-        q = np.where((abs(x0-x[best]) < dist) & (abs(y0-y[best]) < dist))
+        check_oth=[]
+        for i,idx in enumerate(best_stars):
+            val = self.check_oth_obj(x0[i],y0[i], r[i], filt, idx, out_dir)
+            check_oth.append(val)
+        q = np.where((abs(x0-x[best]) < dist) & (abs(y0-y[best]) < dist) & check_oth)
         tt_best = best[q]
         matched_stars =np.array([best_stars[q], x0[q],y0[q],r[q], x[tt_best],y[tt_best]])
         file_name = out_dir+'/'+filt+'_matched_stars.txt'
@@ -451,18 +464,8 @@ class GalaxyCatalog:
             for i in range(len(matched_stars)):
                 x0 =  matched_stars[i][1]
                 y0 =  matched_stars[i][2]
-                stamp_size =  matched_stars[i][3]*6
+                stamp_size =  matched_stars[i][3]*8
                 image = self.params.data_files[filt]
-                seg_name = out_dir + '/'+ filt +'_comb_seg_map.fits'
-                #seg_map = pyfits.open(seg_name)[0].data
-                seg_im = fn.get_subImage_pyfits(int(x0), int(y0), [int(stamp_size)]*2, seg_name,
-                                      None, None, save_img=False)
-                shape = seg_im.shape
-                num = seg_im[shape[0]/2, shape[1]/2]
-                im, bl, oth, oth_segs, check = cp.div_pixels(seg_im, -1)
-                if len(oth_segs)>1:
-                    print "Multiple objects in star stamp for star {0}, object{1}".format(i,oth_segs)
-                    continue
                 dir_star = out_dir+'/stars/'
                 out_name = filt+'_' + str(int(matched_stars[i][0]))
                 sub = fn.get_subImage(int(x0), int(y0), int(stamp_size), image,
@@ -496,50 +499,48 @@ class GalaxyCatalog:
         new_seg_name = out_dir + '/'+ filt +'_comb_seg_map.fits'
         print "Bright faint combined seg map created at", new_seg_name
         pyfits.writeto(new_seg_name, new_seg, clobber=True)
-
-
-
+  
     def generate_catalog(self):
-        if os.path.isdir(self.params.out_path) is False:
-            subprocess.call(["mkdir", self.params.out_path])
-            print "CREATING output folder"
-        out_dir = self.params.out_path+ '/' + self.params.seg_id
-        print "Printing outdir",out_dir
-        self.get_sex_op_params(out_dir)
-        ### Detection done on given added image
-        for filt in self.params.filters:
-            print "measuring filter", filt
-            data_files = [self.params.det_im_file, self.params.data_files[filt]]
-            wht_files = [self.params.det_wht_file, self.params.wht_files[filt]]
-            ###### Create Bright catalog############## 
-            print 'sextractor data files', data_files, wht_files
-            self.run_sextractor_dual(data_files, wht_files,
-                                     self.bright_config_dict, 
-                                     out_dir, filt+"_bright", filt)
-            ###### Create Faint catalog############## 
-            self.run_sextractor_dual(data_files, wht_files,
-                                     self.faint_config_dict, 
-                                     out_dir, filt+"_faint", filt)
-            out_name = filt
-            bright_catalog_name = out_dir+'/'+filt + "_bright.cat"
-            bright_catalog = self.add_bright_faint_column(bright_catalog_name,1)
-            bright_catalog.write(bright_catalog_name, format="ascii.basic")
-            faint_catalog_name = out_dir+'/'+filt + "_faint.cat"
-            faint_catalog = self.add_bright_faint_column(faint_catalog_name,0)
-            seg_map = out_dir+'/'+ out_name + "_bright_seg_map.fits"
-            self.make_new_seg(seg_map, out_dir, filt)
-            new_seg_map = out_dir+'/'+ filt + "_bright_seg_map_new.fits"
-            self.filter_cat_with_segmentation_map(faint_catalog, new_seg_map,
-                                                  out_dir, filt)
-            filtered_faint_name = out_dir + '/' + filt+ "_filteredfaint.cat"
-            # Merge filtered faint catalog and bright catalog
-            self.merge(filtered_faint_name, bright_catalog_name, 
-                       out_name, out_dir)
-        # star-galaxy seperation
-        self.classification(self.params.star_galaxy_weights, out_dir)   
-        # Mark objects at the boundary and in diffraction spikes 
-        self.cleanup_catalog(out_dir)    
-        self.stars_for_focus(out_dir)
+           if os.path.isdir(self.params.out_path) is False:
+               subprocess.call(["mkdir", self.params.out_path])
+               print "CREATING output folder"
+           out_dir = self.params.out_path+ '/' + self.params.seg_id
+           print "Printing outdir",out_dir
+           self.get_sex_op_params(out_dir)
+           ### Detection done on given added image
+           for filt in self.params.filters:
+               print "measuring filter", filt
+               data_files = [self.params.det_im_file, self.params.data_files[filt]]
+               wht_files = [self.params.det_wht_file, self.params.wht_files[filt]]
+               ###### Create Bright catalog############## 
+               print 'sextractor data files', data_files, wht_files
+               self.run_sextractor_dual(data_files, wht_files,
+                                        self.bright_config_dict, 
+                                        out_dir, filt+"_bright", filt)
+               ###### Create Faint catalog############## 
+               self.run_sextractor_dual(data_files, wht_files,
+                                        self.faint_config_dict, 
+                                        out_dir, filt+"_faint", filt)
+               out_name = filt
+               bright_catalog_name = out_dir+'/'+filt + "_bright.cat"
+               bright_catalog = self.add_bright_faint_column(bright_catalog_name,1)
+               bright_catalog.write(bright_catalog_name, format="ascii.basic")
+               faint_catalog_name = out_dir+'/'+filt + "_faint.cat"
+               faint_catalog = self.add_bright_faint_column(faint_catalog_name,0)
+               seg_map = out_dir+'/'+ out_name + "_bright_seg_map.fits"
+               self.make_new_seg(seg_map, out_dir, filt)
+               new_seg_map = out_dir+'/'+ filt + "_bright_seg_map_new.fits"
+               self.filter_cat_with_segmentation_map(faint_catalog, new_seg_map,
+                                                     out_dir, filt)
+               filtered_faint_name = out_dir + '/' + filt+ "_filteredfaint.cat"
+               # Merge filtered faint catalog and bright catalog
+               self.merge(filtered_faint_name, bright_catalog_name, 
+                          out_name, out_dir)
+           # star-galaxy seperation
+           self.classification(self.params.star_galaxy_weights, out_dir)   
+           # Mark objects at the boundary and in diffraction spikes 
+           self.cleanup_catalog(out_dir)    
+           self.stars_for_focus(out_dir)
 
 
 if __name__ == '__main__':
