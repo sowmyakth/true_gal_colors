@@ -47,8 +47,6 @@ class Main_param:
         self.tt_file_name = {}
         for focus in self.focus:
             self.tt_file_name[focus] = args.tt_file_name.replace('focus', 'f'+str(focus)) 
-        
-
 
 def get_bad_stars(args):
     bad_stars ={}
@@ -83,7 +81,8 @@ def get_moments(params, good_stars,
     print filter, params.seg_id
     stars1 = np.loadtxt(out_dir + filter+'_matched_stars.txt').T
     moments = [[],[]]
-    hsm_params =galsim.hsm.HSMParams(max_mom2_iter = 1000000)
+    hsm_params =galsim.hsm.HSMParams(max_mom2_iter = 1000000000)
+    fin_stars=[]
     for num,i in enumerate(good_stars):
         print "Getting moments of star ", int(stars1[i][0])
         x_s = stars1[i][1]
@@ -92,18 +91,30 @@ def get_moments(params, good_stars,
         x_t = stars1[i][4]
         y_t = stars1[i][5]
         star_file = params.data_files[filter]
-        im_s = fn.get_subImage(x_s, y_s, int(r)*6, star_file,
+        im_s = fn.get_subImage(x_s, y_s, int(r)*8, star_file,
                             out_dir, None, save_img=False)
-        moments[0].append(galsim.hsm.FindAdaptiveMom(im_s, hsmparams=hsm_params))
-        moments[1].append({})
-        for i, focus in enumerate(params.focus):
+        star_result = galsim.hsm.FindAdaptiveMom(im_s, hsmparams=hsm_params, strict=False)
+        if star_result.error_message != "":
+            print "Moments measurement failed for star{0}".format(i)
+            continue
+        tt_result = {}
+        check = False
+        for j, focus in enumerate(params.focus):
+            print "Computing moments for focus ", focus
             tt_file = params.tt_file_path + filter+'/'+ params.tt_file_name[focus]
-            im_t = fn.get_subImage(x_t, y_t, int(r)*6, tt_file,
-                                out_dir, None, save_img=False)          
-            moments[1][num][focus] = galsim.hsm.FindAdaptiveMom(im_t, hsmparams=hsm_params)
-    return moments
-
-
+            im_t = fn.get_subImage(x_t, y_t, int(r)*8, tt_file,
+                                out_dir, None, save_img=False)   
+            result = galsim.hsm.FindAdaptiveMom(im_t, hsmparams=hsm_params, strict=False)
+            if result.error_message != "" :
+                check  = True
+                print "Moments measurement failed for tt star{0} at focus{1}".format(i,focus)
+                break      
+            tt_result[focus] = result
+        if check == False:
+            fin_stars.append(i)
+            moments[0].append(star_result)
+            moments[1].append(tt_result)
+    return moments, fin_stars
 
 def calc_cost_fn(params, moments):
     print "Calculating cost function"
@@ -175,7 +186,7 @@ def get_focus(params):
     for filter in params.filters:
         good_stars = get_good_stars(params, filter, out_dir)
         np.savetxt( out_dir + filter+'_good_stars.txt', good_stars)
-        moments = get_moments(params, good_stars, filter, out_dir)
+        moments, final_stars = get_moments(params, good_stars, filter, out_dir)
         cost_fn = calc_cost_fn(params, moments)
         focus[filter] =  cost_fn.T[0][np.argmin(cost_fn.T[1])]
         np.savetxt(out_dir + filter +'_cost_fn.txt', cost_fn)
@@ -190,10 +201,10 @@ def plot_focus_num_stars(params):
         print "Running focus with different star number for filter:", filter
         good_stars = get_good_stars(params, filter, out_dir)
         print "Number of good stars:", len(good_stars) 
-        moments = get_moments(params, good_stars, filter, out_dir)
-        focus =  np.zeros([len(good_stars)-5,2])
-        for i,num in enumerate(range(5,len(good_stars))):               
-            N = len(good_stars) - num - 1
+        moments, final_stars = get_moments(params, good_stars, filter, out_dir)
+        focus =  np.zeros([len(final_stars)-3,2])
+        for i,num in enumerate(range(3,len(final_stars))):               
+            N = len(final_stars) - num - 1
             print "multi num stars ", N
             cost_fn = calc_cost_fn_num(params, moments, N) 
             focus[i][0] = num
@@ -208,7 +219,7 @@ def get_psf(args):
     bad_stars = get_bad_stars(args)
     params = Main_param(args, bad_stars[args.seg_id])
     plot_focus_num_stars(params)
-    focus = get_focus(params)
+    #focus = get_focus(params)
     print "Getting postage stamps"
     gps.run(params)
             
