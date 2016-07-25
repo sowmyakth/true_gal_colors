@@ -165,7 +165,7 @@ class GalaxyCatalog:
         param_file.close()
         
     def run_sextractor_dual(self, data_files, wht_files,
-                            use_dict,out_dir, out_name, filter):
+                            use_dict,out_dir, out_name, filt):
         """ Runs sextractor in dual mode"""
         print "Running dual : ", out_name
         #Create config newfiles[i] and write out to a file
@@ -189,9 +189,9 @@ class GalaxyCatalog:
         config_ascii[0][row_counter+1] = 'CHECKIMAGE_TYPE'
         config_ascii[1][row_counter+1] = 'SEGMENTATION'
         config_ascii[0][row_counter+2] = 'MAG_ZEROPOINT'
-        config_ascii[1][row_counter+2] = self.params.zero_point_mag[filter]
+        config_ascii[1][row_counter+2] = self.params.zero_point_mag[filt]
         config_ascii[0][row_counter+3] = 'GAIN'
-        config_ascii[1][row_counter+3] = self.params.gain[filter]
+        config_ascii[1][row_counter+3] = self.params.gain[filt]
         config_fname =  out_dir+ '/'+ out_name + ".config"
         #config_ascii.writeto(config_fname)
         config_ascii.writeto(config_fname)               
@@ -243,20 +243,20 @@ class GalaxyCatalog:
         where they lie in the magnitude, peak surface brightness plot """     
         x_max = 25
         print "Performing star galaxy seperation for section", self.params.seg_id
-        for filter in self.params.filters:
-            x_div = div_params[filter][0]
-            y_div = div_params[filter][1]
-            slope = div_params[filter][2]
+        for filt in self.params.filters:
+            x_div = div_params[filt][0]
+            y_div = div_params[filt][1]
+            slope = div_params[filt][2]
             intercept = y_div - slope*x_div
-            out_name = filter
+            out_name = filt
             merged_catalog = out_dir + '/' +out_name+ "_merge.cat"
             catalog = Table.read(merged_catalog, format="ascii.basic")
             snr = np.array(catalog['FLUX_AUTO'])/np.array(catalog['FLUXERR_AUTO'])
             col= Column(snr,name='SNR',description = 'Signal to Noise Ratio')
             catalog.add_column(col)
             # modified snr
-            A = catalog['FLUXERR_AUTO']**2 - catalog['FLUX_AUTO']/self.params.gain[filter]
-            new_f_err = (A/self.params.sf + catalog['FLUX_AUTO']/self.params.gain[filter])**0.5 
+            A = catalog['FLUXERR_AUTO']**2 - catalog['FLUX_AUTO']/self.params.gain[filt]
+            new_f_err = (A/self.params.sf + catalog['FLUX_AUTO']/self.params.gain[filt])**0.5 
             col= Column(new_f_err,name='NEW_FLUXERR_AUTO',description = 'Modified FLUXERR_AUTO')
             catalog.add_column(col)
             new_snr = np.array(catalog['FLUX_AUTO'])/new_f_err
@@ -391,10 +391,10 @@ class GalaxyCatalog:
 
 
     def match_to_tt(self, catalog, out_dir,
-                    filter, best_stars, dist=200.):
+                    filt, best_stars, dist=200.):
         """Find closest tiny tim PSF image in the tt_starfiled for each of
          the stars picked to find focus stars""" 
-        tt_stars = self.params.tt_file_path + "/" + filter + "/{}_stars.txt".format(filter) 
+        tt_stars = self.params.tt_file_path + "/" + filt + "/{}_stars.txt".format(filt) 
         print 'tt stars', tt_stars
         tt_table = np.loadtxt(tt_stars)        
         x0 = catalog['X_IMAGE'][best_stars]
@@ -413,18 +413,18 @@ class GalaxyCatalog:
         q = np.where((abs(x0-x[best]) < dist) & (abs(y0-y[best]) < dist))
         tt_best = best[q]
         matched_stars =np.array([best_stars[q], x0[q],y0[q],r[q], x[tt_best],y[tt_best]])
-        file_name = out_dir+'/'+filter+'_matched_stars.txt'
+        file_name = out_dir+'/'+filt+'_matched_stars.txt'
         np.savetxt(file_name, matched_stars )
         return matched_stars.T
 
-    def check_stars(self, best_stars, filter, out_dir):
+    def check_stars(self, best_stars, filt, out_dir):
         """ Check if the best stars are detected as stars in all filters.
         If not then remove them from the list of stars used to get the focus.
         """
         filter_list = list(self.params.filters)
-        filter_list.remove(filter)
+        filter_list.remove(filt)
         for check_filter in filter_list:
-            print 'Check strars from {0} in {1}'.format(filter,check_filter)
+            print 'Check strars from {0} in {1}'.format(filt,check_filter)
             cat_name = out_dir + '/' + check_filter + "_clean.cat"
             catalog = Table.read(cat_name, format="ascii.basic")
             select_stars = best_stars
@@ -438,33 +438,33 @@ class GalaxyCatalog:
 
     def stars_for_focus(self, out_dir):
         """Make postage stamps of stars with the highest SNR"""
-        for filter in self.params.filters:
-            out_name = filter
-            cat_name = out_dir + '/' + out_name + "_clean.cat"
+        for filt in self.params.filters:
+            cat_name = out_dir + '/' + filt + "_clean.cat"
             print "Making postage stamps of stars on filter ", cat_name
             catalog = Table.read(cat_name, format="ascii.basic")
             # get indices of stars with highest SNR
             best_stars = fn.select_good_stars_table(catalog)#,nstars=25)
-            select_stars = self.check_stars(best_stars,filter, out_dir)
-            matched_stars = self.match_to_tt(catalog, out_dir, filter, select_stars)
+            select_stars = self.check_stars(best_stars,filt, out_dir)
+            matched_stars = self.match_to_tt(catalog, out_dir, filt, select_stars)
             print 'Number of stars selected', len(select_stars)
             num =0
             for i in range(len(matched_stars)):
                 x0 =  matched_stars[i][1]
                 y0 =  matched_stars[i][2]
                 stamp_size =  matched_stars[i][3]*6
-                image = self.params.data_files[filter]
+                image = self.params.data_files[filt]
                 seg_name = out_dir + '/'+ filt +'_comb_seg_map.fits'
-                seg_map = pyfits.open()[0].data
-                seg_im = fn.get_subImage(int(x0), int(y0), int(stamp_size), seg_map,
+                #seg_map = pyfits.open(seg_name)[0].data
+                seg_im = fn.get_subImage_pyfits(int(x0), int(y0), [int(stamp_size)]*2, seg_name,
                                       None, None, save_img=False)
                 shape = seg_im.shape
                 num = seg_im[shape[0]/2, shape[1]/2]
-                im, bl, oth, oth_segs, check = cp.div_pixels(seg_im, num)
-                if len(oth_segs)>0:
+                im, bl, oth, oth_segs, check = cp.div_pixels(seg_im, -1)
+                if len(oth_segs)>1:
+                    print "Multiple objects in star stamp for star {0}, object{1}".format(i,oth_segs)
                     continue
                 dir_star = out_dir+'/stars/'
-                out_name = filter+'_' + str(int(matched_stars[i][0]))
+                out_name = filt+'_' + str(int(matched_stars[i][0]))
                 sub = fn.get_subImage(int(x0), int(y0), int(stamp_size), image,
                                       dir_star, out_name, save_img=True)
                 num+=1
@@ -496,6 +496,8 @@ class GalaxyCatalog:
         new_seg_name = out_dir + '/'+ filt +'_comb_seg_map.fits'
         print "Bright faint combined seg map created at", new_seg_name
         pyfits.writeto(new_seg_name, new_seg, clobber=True)
+
+
 
     def generate_catalog(self):
         if os.path.isdir(self.params.out_path) is False:
@@ -593,18 +595,3 @@ if __name__ == '__main__':
     args = parser.parse_args()
     params = Main_param(args)
     run_segment(params)
-    
-
-
-
-
-
-
-
-
-
-
-
-    
-
-
