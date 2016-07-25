@@ -10,10 +10,13 @@ from astropy.table import Table, Column
 ### rectangular postage stamps
 
 def run(params):
+    #make folder postage_stamps every time code is run
     out_dir = params.out_path + params.seg_id+ '/'
-
-    if os.path.isdir(out_dir + 'postage_stamps') is False:
+    if os.path.isdir(out_dir + 'postage_stamps') is True:
+            subprocess.call(["rm", '-r', out_dir + 'postage_stamps'])
             subprocess.call(["mkdir", out_dir + 'postage_stamps'])
+    else:
+        subprocess.call(["mkdir", out_dir + 'postage_stamps'])
     catalogs = []
     tt_files =[]
     #Open main catalog in all filters
@@ -37,9 +40,9 @@ def run(params):
         for f,filter in enumerate(params.filters):
             cond1 = (catalogs[f]['IS_STAR'][i] == 0)
             cond2 = (catalogs[f]['IN_MASK'][i] == 0)
-            cond3 = (catalogs[f]['SNR'][i] >= 4.5)
+            cond3 = (catalogs[f]['SNR'][i] >= 0)
             cond4 = (catalogs[f]['MULTI_DET'][i] == 0)
-            cond5 = (catalogs[f]['MAG_AUTO'][i] >= 25.2)
+            cond5 = (catalogs[f]['MAG_AUTO'][i] <= 25.2)
             if  cond1 and cond2 and cond3 and cond4 and cond5:
                 t = (catalogs[f]['THETA_IMAGE'][int(i)])*np.pi/180.
                 e = catalogs[f]['ELLIPTICITY'][int(i)]
@@ -91,20 +94,13 @@ def run(params):
             gal_file_name = out_dir + 'postage_stamps/' + filter + '_' + params.seg_id + '_' + str(i)+'_image.fits'
             psf_file_name = out_dir + 'postage_stamps/' + filter + '_' + params.seg_id + '_' + str(i)+'_psf.fits'
             seg_file_name = out_dir + 'postage_stamps/' + filter + '_' + params.seg_id + '_' + str(i)+'_seg.fits'
-
             a = np.loadtxt(out_dir+filter+'_focus_with_num_stars.txt')
             focus = a[-1][1]
             print "Focus is ", focus
             gal_name = params.data_files[filter]
             gal_image = fn.get_subImage_pyfits(x0,y0, stamp_size, gal_name, None, None, save_img=False)
-            #gal_images.append(galsim.Image(gal_image))
-            #gal_images.append(gal_image)
-            
             psf_name = params.tt_file_path + filter+'/'+ params.tt_file_name[focus]
             psf_image = fn.get_subImage_pyfits(tt_pos[0],tt_pos[1], stamp_size, psf_name, None, None, save_img=False)
-            #psf_images.append(galsim.Image(psf_image))
-            #psf_images.append(psf_image)
-
             seg_name = out_dir + filter +'_comb_seg_map.fits'
             seg_image = fn.get_subImage_pyfits(x0,y0, stamp_size, seg_name, None, None, save_img=False)
             for header_param in header_params:
