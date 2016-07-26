@@ -11,12 +11,11 @@ def get_in_galsim(args):
             os.remove(fl)
     index_table = assign_num(args)
     for f, filt in enumerate(args.filter_names):
-        get_images(args, index_table, filt)
+        get_images(args, index_table, filt, args.file_filter_name[f])
     get_main_catalog(args, index_table)
     get_selection_catalog(args, index_table)
     get_fits_catalog(args, index_table)
     
-
 def main_table():
     names = ('IDENT', 'RA', 'DEC', 'MAG', 'BAND', 'WEIGHT', 'GAL_FILENAME')
     names+= ('PSF_FILENAME', 'GAL_HDU', 'PSF_HDU', 'PIXEL_SCALE')
@@ -55,8 +54,8 @@ def fits_table():
 def get_main_catalog(args, index_table):
     """Make catlog containing info about all galaxies in final catalog.
     Columns are identical to cosmos real galaxy catalog"""
+    print "Creating main catalog" 
     all_seg_ids = np.loadtxt(args.seg_list_file, delimiter=" ",dtype='S2')
-    all_seg_ids = ['0a']
     for f, filt in enumerate(args.filter_names):
     	final_table = main_table()
         for seg_id in all_seg_ids:
@@ -88,8 +87,8 @@ def get_main_catalog(args, index_table):
 def get_selection_catalog(args, index_table):
     """Make catlog containing info about all galaxies in final catalog.
     Columns are identical to cosmos real galaxy catalog"""
+    print "Creating selection catalog" 
     all_seg_ids = np.loadtxt(args.seg_list_file, delimiter=" ",dtype='S2')
-    all_seg_ids = ['0a']
     for f, filt in enumerate(args.filter_names):
     	final_table = selection_table()
         for seg_id in all_seg_ids:
@@ -107,9 +106,9 @@ def get_selection_catalog(args, index_table):
 
 def get_fits_catalog(args, index_table):
     """Make catlog containing info about all galaxies in final catalog.
-    Columns are identical to cosmos real galaxy catalog"""    
+    Columns are identical to cosmos real galaxy catalog"""   
+    print "Creating fits catalog" 
     all_seg_ids = np.loadtxt(args.seg_list_file, delimiter=" ",dtype='S2')
-    all_seg_ids = ['0a']
     for f, filt in enumerate(args.filter_names):
     	final_table = fits_table()
         for seg_id in all_seg_ids:
@@ -148,12 +147,12 @@ def get_fits_catalog(args, index_table):
         final_table.write(path + file_name)
 
 
-def get_images(args, index_table, filt):
+def get_images(args, index_table,
+               filt, filt_name):
     """Make fits files of postage stamps"""
+    print "Saving images"
     n = np.max(index_table['FILE_NUM'])
-    print 'n', n
     for f in range(1,n+1):
-    	print 'f', f
         hdu_count = 0
         q, = np.where(index_table['FILE_NUM'] == f)
         im_hdul = fits.HDUList()
@@ -172,11 +171,10 @@ def get_images(args, index_table, filt):
             hdu_count+=1
         path = args.main_path + args.out_dir 
         im_name = args.gal_im_name.replace('umber', str(f))
-        im_name = im_name.replace('filter', args.file_filter_name[f])
+        im_name = im_name.replace('filter', filt_name)
         im_name = path + im_name
-        print im_name
         psf_name = args.psf_im_name.replace('umber', str(f))
-        psf_name = psf_name.replace('filter', args.file_filter_name[f])
+        psf_name = psf_name.replace('filter', filt_name)
         psf_name = path + psf_name
         im_hdul.writeto(im_name, clobber=True)
         psf_hdul.writeto(psf_name, clobber=True)
@@ -184,6 +182,7 @@ def get_images(args, index_table, filt):
 
 def assign_num(args):
     """Assign individual identification number to each object"""
+    print "Assigning number"
     names = ('SEG_ID', 'NUMBER', 'IDENT', 'FILE_NUM', 'HDU')
     dtype = ('string', 'int', 'int' ,'int', 'int')
     index_table = Table(names=names, dtype = dtype)
@@ -191,7 +190,6 @@ def assign_num(args):
     #objects detected same in all filters. So read catalog only of first filter
     filt = args.filter_names[0]
     all_seg_ids = np.loadtxt(args.seg_list_file, delimiter=" ",dtype='S2')
-    all_seg_ids = ['0a']
     for seg_id in all_seg_ids:
         #for filt in args.filter_names
         #    seg_cat = Table.read()
@@ -207,8 +205,6 @@ def assign_num(args):
         temp = Table([seg_ids, numbers, idents, file_nums, hdus],names=names, dtype = dtype)
         index_table = vstack([index_table,temp])
         ident+=len(catalog)
-    #import ipdb;ipdb.set_trace()
-    print index_table
     return index_table
 
 
@@ -220,13 +216,13 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--n_filters', type=int, default=2,
                         help="number of image filters [Default: 2]")
-    parser.add_argument('--filter_names', default= ['f814w','f606w'],
+    parser.add_argument('--filter_names', default= ['f606w','f814w'],
                         help="names of filters [Default: ['f606w','f814w']]")
     parser.add_argument('--main_path',
-                        default = '/nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_training_sample/')
-    parser.add_argument('--out_dir', default = "catalog/",
+                        default = '/nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_full/')
+    parser.add_argument('--out_dir', default = "AEGIS_training_sample/",
                         help="directory containing the final catalog")
-    parser.add_argument('--cat_name', default = "AEGIS_catalog_filter_25.2.fits",
+    parser.add_argument('--cat_name', default = "AEGIS_galaxy_catalog_filter_25.2.fits",
                         help="Final catalog name")
     parser.add_argument('--gal_im_name', default = "AEGIS_galaxy_images_filter_25.2_number.fits",
                         help="Final name of galaxy images")
@@ -240,7 +236,6 @@ if __name__ == '__main__':
                         help="Name of Catalog with fit information")
     parser.add_argument('--seg_list_file', default ='/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/seg_ids.txt',
                         help="file with all seg id names" )
-    #parser.add_argument('--cat_name', default = )
     args = parser.parse_args()
     get_in_galsim(args)
 
