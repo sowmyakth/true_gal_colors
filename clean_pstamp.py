@@ -134,6 +134,8 @@ def clean_pstamp(args):
     params = Main_param(args)
     for i, f1 in enumerate(params.filters):
         print "Running filter", f1
+        if os.path.isdir(params.path + 'stamp_stats') is False:
+            subprocess.call(["mkdir", params.path + 'stamp_stats'])
         hdu1 = pyfits.open(params.gal_files[f1])
         hdu2 = pyfits.open(params.seg_files[f1])
         im_dat = hdu1[0].data
@@ -144,15 +146,26 @@ def clean_pstamp(args):
         shape = im_dat.shape       
         x0, y0= shape[0]/2, shape[1]/2
         im, bl, oth, oth_segs, check = div_pixels(seg_dat, params.num)
+        # Some bright object is nearby, dont consider central object
+        if len(im)==0:
+            print "Ignore object"
+            peak_val = 0
+            min_dist = 0.
+            min_dist_seg = 0.        
+            avg_flux = 0
+            snr = -1
+            info = [0, 0, 0 , min_dist, avg_flux, peak_val, snr ]
+            np.savetxt(params.path + 'stamp_stats'+'/'+ params.num + '_'+ f1 + '.txt', info)
+            new_im_name = params.path + f1 + '_'+ params.seg_id + '_'+ params.num +'_gal.fits'
+            pyfits.writeto(new_im_name, im_dat, im_hdr, clobber=True)
+            continue
         peak_val = np.max([[im_dat[im[i][0]][im[i][1]]] for i in range(len(im))])
-        #oth_pixels = im[oth[i][0], oth[i][1] for i in range(len(oth))]
         bck_pixels = [im_dat[bl[i][0], bl[i][1]] for i in range(len(bl))]
         b_mean, b_std = get_stats(np.array(bck_pixels), str='Image Background')
-        if os.path.isdir(params.path + 'stamp_stats') is False:
-            subprocess.call(["mkdir", params.path + 'stamp_stats'])        
-        if check ==1:
-            raise AttributeError("Pixel at center isn't main object")
-        elif len(oth_segs)==0 :
+                
+        #if check ==1:
+        #    raise AttributeError("Pixel at center isn't main object")
+        if len(oth_segs)==0 :
             print "No other object"
             min_dist = 0.
             min_dist_seg =0.        
