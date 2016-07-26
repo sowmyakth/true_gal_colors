@@ -118,7 +118,6 @@ def select_good_stars_table(catalog, nstars=25):
 
 def get_subImage(x0,y0, L, image,
                  out_dir, out_name, save_img=False):
-
     f = pyfits.open(image)
     image_data = f[0].data
     f.close()
@@ -136,6 +135,7 @@ def get_subImage(x0,y0, L, image,
             subprocess.call(["mkdir", out_dir])
             sub.write(out_dir+out_name+".fits")
     return sub
+
 def get_subImage_pyfits(x0,y0, L, image,
                  out_dir, out_name, save_img=False):
     """Height and width of postage stamp different"""
