@@ -82,7 +82,8 @@ def get_main_catalog(args, index_table):
             final_table = vstack([final_table,temp], join_type='inner')
         path = args.main_path + args.out_dir 
         cat_name = args.cat_name.replace('filter', args.file_filter_name[f])
-        final_table.write(path + cat_name, format='ascii.basic')
+        final_table.write(path + cat_name, format='fits')
+        print "Savings fits file at ", path + cat_name
 
 def get_selection_catalog(args, index_table):
     """Make catlog containing info about all galaxies in final catalog.
@@ -102,7 +103,8 @@ def get_selection_catalog(args, index_table):
             final_table = vstack([final_table,temp], join_type='inner')
         path = args.main_path + args.out_dir 
         file_name = args.selec_file_name.replace('filter', args.file_filter_name[f])
-        final_table.write(path + file_name, format='ascii.basic')
+        final_table.write(path + file_name, format='fits')
+        print "Savings fits file at ", path + file_name
 
 def get_fits_catalog(args, index_table):
     """Make catlog containing info about all galaxies in final catalog.
@@ -144,7 +146,7 @@ def get_fits_catalog(args, index_table):
         file_name = args.fits_file_name.replace('filter', args.file_filter_name[f])
         print "Savings fits file at ", path + file_name
         #import ipdb;ipdb.set_trace()
-        final_table.write(path + file_name)
+        final_table.write(path + file_name, format='fits')
 
 
 def get_images(args, index_table,
@@ -152,6 +154,7 @@ def get_images(args, index_table,
     """Make fits files of postage stamps"""
     print "Saving images"
     n = np.max(index_table['FILE_NUM'])
+    print "Total number of file will be ",n
     for f in range(1,n+1):
         hdu_count = 0
         q, = np.where(index_table['FILE_NUM'] == f)
@@ -182,6 +185,8 @@ def get_images(args, index_table,
 
 def assign_num(args):
     """Assign individual identification number to each object"""
+    seed =122
+    np.random.seed(seed)
     print "Assigning number"
     names = ('SEG_ID', 'NUMBER', 'IDENT', 'FILE_NUM', 'HDU')
     dtype = ('string', 'int', 'int' ,'int', 'int')
@@ -205,7 +210,9 @@ def assign_num(args):
         temp = Table([seg_ids, numbers, idents, file_nums, hdus],names=names, dtype = dtype)
         index_table = vstack([index_table,temp])
         ident+=len(catalog)
-    return index_table
+    val = range(len(index_table))
+    np.random.shuffle(vall)
+    return index_table[val]
 
 
 
@@ -231,7 +238,7 @@ if __name__ == '__main__':
     parser.add_argument('--selec_file_name', default = "AEGIS_catalog_filter_25.2_selection.fits",
                         help="Catalog with selection information")
     parser.add_argument('--file_filter_name', default =['V', 'I'] ,
-                        help="Catalog with selection information")
+                        help="Name of filter to use ")
     parser.add_argument('--fits_file_name', default = "AEGIS_catalog_filter_25.2_fits.fits",
                         help="Name of Catalog with fit information")
     parser.add_argument('--seg_list_file', default ='/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/seg_ids.txt',
