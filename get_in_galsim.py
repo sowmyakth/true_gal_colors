@@ -154,7 +154,7 @@ def get_images(args, index_table,
     """Make fits files of postage stamps"""
     print "Saving images"
     n = np.max(index_table['FILE_NUM'])
-    print "Total number of file will be ",n
+    print "Total number of files will be ",n
     for f in range(1,n+1):
         hdu_count = 0
         q, = np.where(index_table['FILE_NUM'] == f)
@@ -211,7 +211,7 @@ def assign_num(args):
         index_table = vstack([index_table,temp])
         ident+=len(catalog)
     val = range(len(index_table))
-    np.random.shuffle(vall)
+    np.random.shuffle(val)
     return index_table[val]
 
 
