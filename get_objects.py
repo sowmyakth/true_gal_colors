@@ -12,6 +12,8 @@ objects are merged with the cold(bright) catalog that aren't within buffer
 region  --buffer.
 
 Cleanup
+Since the noise in the image is not uncorrelated (dut to multidrizzle), the snr
+computed from sextractor needs is modified by parameter scale factr --sf.
 The detected objects are then classified into stars and galaxies depending on
 their position in the MAG_AUTO Vs MU_MAX plot. The seperation line is set 
 by star_galaxy_weights. Objects that lie on image edge are masked. Region around
