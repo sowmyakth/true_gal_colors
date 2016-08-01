@@ -1,12 +1,26 @@
+"""Program to detect objects in a given image (segment) and make a catalog 
+using sextractor. Objects are detected with the Hot-Cold method employed in
+Rix et al.(2004). 
 
-## run_segment2.py modified . using astropy table instaed of asciidata
+SExtractor Detection:
+SExtractor is run in double image mode, with objects detected in det_im_file &
+det_wht_file as weight map. These detected objects are then measures in each
+band(file_name, wht_name). SExtractor WEIGHT_TYPE is set with wht_type and
+det_wht_type for detection and measurement respectively. The config parameters 
+for Hot-Cold detetction are preset and not input  parametrs. The hot (faint)
+objects are merged with the cold(bright) catalog that aren't within buffer 
+region  --buffer.
 
-### MU_MAX                   Peak surface brightness above background    
-## zero mag added to sextractor              [mag * arcsec**(-2)]
-##  weight map converted to rms
-####  detction done on 2 filter added image
-#import find_objects as find
-#import pandas as pd
+Cleanup
+The detected objects are then classified into stars and galaxies depending on
+their position in the MAG_AUTO Vs MU_MAX plot. The seperation line is set 
+by star_galaxy_weights. Objects that lie on image edge are masked. Region around saturated stars are masked: masked 
+region set by filter_spike_params.Regions that were manually observed to
+have artefacts (eg.ghosts) and are to be masked are input as manual_mask_file.
+
+Stars for PSF estimation
+
+"""
 import asciidata
 from astropy.table import Table, Column, vstack
 import subprocess
@@ -15,14 +29,12 @@ import os
 import numpy as np
 import functions as fn
 import clean_pstamp as cp
-#import get_focus as focus
-
-#import ipdb; ipdb.set_trace() 
-### manual mask cleanup added
 
 
 class Main_param:
-    """Class containg parameters to pass to run analysis on each segment file."""
+    """Class containg parameters to pass to run analysis on each segment file.
+    it adds path name in front of file name and replace seg_id names and filter names.
+    """
     def __init__(self,args):
         self.seg_id = args.seg_id
         self.file_name = args.file_name.replace('seg_id', self.seg_id)
@@ -35,6 +47,7 @@ class Main_param:
         self.focus = args.focus
         self.sf = args.sf
         self.wht_type = args.wht_type
+        self.det_wht_type = args.det_wht_type
         self.manual_mask_file = args.manual_mask_file
         self.buffer = args.buffer
         ## making weight maps rms
@@ -51,16 +64,14 @@ class Main_param:
         self.data_files, self.wht_files = {}, {}
         for i in range(len(self.filters)):
             filter1 = self.filters[i]
-            self.data_files[filter1] = self.file_path + filter1 + '/' + self.file_name.replace('filter', filter1)
-            self.wht_files[filter1] = self.wht_path + filter1 + '/' + self.wht_name.replace('filter',filter1)
+            self.data_files[filter1] = self.file_path + filter1 + 
+                                       '/' + self.file_name.replace('filter', filter1)
+            self.wht_files[filter1] = self.wht_path + filter1 + '/' + 
+                                      self.wht_name.replace('filter',filter1)
             self.spike_params[filter1] = args.filter_spike_params[i] 
             self.zero_point_mag[filter1] = args.zero_point_mag[i]
             self.star_galaxy_weights[filter1] = args.star_galaxy_weights[i]
             self.gain[filter1] = args.gain[i]
-        self.tt_file_name = {}
-        for focus in self.focus:
-            self.tt_file_name[focus] = args.tt_file_name.replace('focus', 'f'+str(focus))
-
 
 def run_segment(params):
     """Find objects in individual segments.
@@ -96,8 +107,7 @@ def run_segment(params):
     cat = GalaxyCatalog(params)
     cat.generate_catalog()    
 
-class GalaxyCatalog:
-    
+class GalaxyCatalog:    
     output_params = ["NUMBER",
     "X_IMAGE",
     "Y_IMAGE",
@@ -147,7 +157,7 @@ class GalaxyCatalog:
         self.params = params
 
     def get_sex_op_params(self, out_dir):
-        ##### Saves the names of parameters thet sextractor must save
+        """Saves the names of parameters thet sextractor must save"""
         param_fname = 'sex_out.param'
         try:
             param_file=open(out_dir+ '/'+ param_fname, 'w')
@@ -162,7 +172,7 @@ class GalaxyCatalog:
         
     def run_sextractor_dual(self, data_files, wht_files,
                             use_dict,out_dir, out_name, filt):
-        """ Runs sextractor in dual mode"""
+        """ Runs sextractor in double image mode"""
         print "Running dual : ", out_name
         #Create config newfiles[i] and write out to a file
         config_ascii = asciidata.create(2,8+len(use_dict))
@@ -172,7 +182,7 @@ class GalaxyCatalog:
         config_ascii[0][1] = 'PARAMETERS_NAME'
         config_ascii[1][1] = out_dir+"/sex_out.param"
         config_ascii[0][2] = 'WEIGHT_TYPE'
-        config_ascii[1][2] = self.params.wht_type   #### check if it should ne MAP_RMS
+        config_ascii[1][2] = str(self.params.wht_type, self.params.det_wht_type)   #### check if it should ne MAP_RMS
         config_ascii[0][3] = 'WEIGHT_IMAGE'
         config_ascii[1][3] = str(wht_files[0] + ','+ wht_files[1])
         row_counter = 4
@@ -194,13 +204,17 @@ class GalaxyCatalog:
         #Run sextractor and get the catalog
         subprocess.call(["sex", data_files[0],",",data_files[1] , "-c", config_fname])
 
-    def add_bright_faint_column(self, cat_name,tag):
+    def add_bright_faint_column(self, cat_name, tag):
+        """Add coloumn 'IS_BRIGHT' in catalog with name cat_name.
+        value of column is to tag.
+        """
         catalog = Table.read(cat_name, format="ascii.sextractor")
         col= Column(np.ones(len(catalog))*tag,name='IS_BRIGHT',dtype='int', description = 'Detected in hot mode' )
         catalog.add_column(col)
         return catalog
 
     def make_new_seg(self, seg_map, out_dir, out_name):
+        """Expands bright seg map objects by params.buffer pixels """
         data = pyfits.open(seg_map)[0].data
         new_seg = fn.seg_expand(data, buff=self.params.buffer)
         new_name = out_dir + '/' + out_name+ "_bright_seg_map_new.fits"
@@ -286,23 +300,22 @@ class GalaxyCatalog:
         col = Column(val, name='IN_BOUNDARY', 
                      description="Inside a masked region", dtype=int)
         catalog.add_column(col)
-        #Check this
         return catalog
 
-#########Check#####
     def diffraction_mask_cleanup(self, catalog,
                                  diff_spike_params,  mag_cutoff = 19.0):
+        """masks objects too close to saturated stars."""
         m = diff_spike_params[0] 
         b = diff_spike_params[1]
         w = diff_spike_params[2]*0.5
         theta = diff_spike_params[3]
         x_vertex_sets = []
-        y_vertex_sets = []
-        print "Identifying diffraction spikes"
+        y_vertex_sets = []        
         val=np.zeros(len(catalog))
         col = Column(val, name='IN_DIFF_MASK', 
                  description="Close to saturated star", dtype=int)
         catalog.add_column(col)
+        print "Identifying saturated stars"
         cond1 = catalog['MAG_AUTO']  < mag_cutoff
         cond2 = catalog['IS_STAR'] == 1
         q, = np.where( cond1 & cond2)
@@ -501,46 +514,49 @@ class GalaxyCatalog:
         pyfits.writeto(new_seg_name, new_seg, clobber=True)
   
     def generate_catalog(self):
-           if os.path.isdir(self.params.out_path) is False:
-               subprocess.call(["mkdir", self.params.out_path])
-               print "CREATING output folder"
-           out_dir = self.params.out_path+ '/' + self.params.seg_id
-           print "Printing outdir",out_dir
-           self.get_sex_op_params(out_dir)
-           ### Detection done on given added image
-           for filt in self.params.filters:
-               print "measuring filter", filt
-               data_files = [self.params.det_im_file, self.params.data_files[filt]]
-               wht_files = [self.params.det_wht_file, self.params.wht_files[filt]]
-               ###### Create Bright catalog############## 
-               print 'sextractor data files', data_files, wht_files
-               self.run_sextractor_dual(data_files, wht_files,
-                                        self.bright_config_dict, 
-                                        out_dir, filt+"_bright", filt)
-               ###### Create Faint catalog############## 
-               self.run_sextractor_dual(data_files, wht_files,
-                                        self.faint_config_dict, 
-                                        out_dir, filt+"_faint", filt)
-               out_name = filt
-               bright_catalog_name = out_dir+'/'+filt + "_bright.cat"
-               bright_catalog = self.add_bright_faint_column(bright_catalog_name,1)
-               bright_catalog.write(bright_catalog_name, format="ascii.basic")
-               faint_catalog_name = out_dir+'/'+filt + "_faint.cat"
-               faint_catalog = self.add_bright_faint_column(faint_catalog_name,0)
-               seg_map = out_dir+'/'+ out_name + "_bright_seg_map.fits"
-               self.make_new_seg(seg_map, out_dir, filt)
-               new_seg_map = out_dir+'/'+ filt + "_bright_seg_map_new.fits"
-               self.filter_cat_with_segmentation_map(faint_catalog, new_seg_map,
-                                                     out_dir, filt)
-               filtered_faint_name = out_dir + '/' + filt+ "_filteredfaint.cat"
-               # Merge filtered faint catalog and bright catalog
-               self.merge(filtered_faint_name, bright_catalog_name, 
+        # create o/p folder if doesn't exist
+        if os.path.isdir(self.params.out_path) is False:
+            subprocess.call(["mkdir", self.params.out_path])
+            print "CREATING output folder"
+        out_dir = self.params.out_path+ '/' + self.params.seg_id
+        print "Printing outdir",out_dir
+        # create file taht lists o/p required from SExtractor
+        self.get_sex_op_params(out_dir)
+        ### Detection done on given added image
+        for filt in self.params.filters:
+            print "measuring filter", filt
+            data_files = [self.params.det_im_file, self.params.data_files[filt]]
+            wht_files = [self.params.det_wht_file, self.params.wht_files[filt]]
+            # Create Bright catalog#
+            print 'sextractor data files', data_files, wht_files
+            self.run_sextractor_dual(data_files, wht_files,
+                                     self.bright_config_dict, 
+                                     out_dir, filt+"_bright", filt)
+            # Create Faint catalog#
+            self.run_sextractor_dual(data_files, wht_files,
+                                     self.faint_config_dict, 
+                                     out_dir, filt+"_faint", filt)
+            out_name = filt
+            bright_catalog_name = out_dir+'/'+filt + "_bright.cat"
+            bright_catalog = self.add_bright_faint_column(bright_catalog_name,1)
+            bright_catalog.write(bright_catalog_name, format="ascii.basic")
+            faint_catalog_name = out_dir+'/'+filt + "_faint.cat"
+            faint_catalog = self.add_bright_faint_column(faint_catalog_name,0)
+            seg_map = out_dir+'/'+ out_name + "_bright_seg_map.fits"
+            self.make_new_seg(seg_map, out_dir, filt)
+            new_seg_map = out_dir+'/'+ filt + "_bright_seg_map_new.fits"
+            self.filter_cat_with_segmentation_map(faint_catalog, new_seg_map,
+                                                  out_dir, filt)
+            filtered_faint_name = out_dir + '/' + filt+ "_filteredfaint.cat"
+            #Merge filtered faint catalog and bright catalog
+            self.merge(filtered_faint_name, bright_catalog_name, 
                           out_name, out_dir)
-           # star-galaxy seperation
-           self.classification(self.params.star_galaxy_weights, out_dir)   
-           # Mark objects at the boundary and in diffraction spikes 
-           self.cleanup_catalog(out_dir)    
-           self.stars_for_focus(out_dir)
+        # star-galaxy seperation
+        self.classification(self.params.star_galaxy_weights, out_dir)   
+        # Mark objects at the boundary and in diffraction spikes 
+        self.cleanup_catalog(out_dir) 
+        # pick stars for PSF estimation   
+        self.stars_for_focus(out_dir)
 
 
 if __name__ == '__main__':
@@ -548,51 +564,73 @@ if __name__ == '__main__':
     import numpy as np
     from argparse import ArgumentParser
     parser = ArgumentParser()
-    parser.add_argument('--n_filters', type=int, default=2,
-                        help="number of image filters [Default: 2]")
-    parser.add_argument('--filter_names', default= ['f814w','f606w'],
-                        help="names of filters [Default: ['f606w','f814w']]")
-    parser.add_argument('--filter_spike_params', 
-                        default= [(0.0367020,77.7674,40.0,2.180), (0.0350087,64.0863,40.0,2.614)],
-                        help="Prams of diffraction spikes on filters. These have to in the same order as filter_names [Default: [(0.0350087,64.0863,40.0,2.614), (0.0367020,77.7674,40.0,2.180)]]")
-    parser.add_argument('--star_galaxy_weights', 
-                        default= [(18.9, 14.955, 0.98), (19.4, 15.508, 0.945)],
-                        help="Star galaxy seperation line [Defalt:(x_div, y_div, slope)]")
-    parser.add_argument('--zero_point_mag', 
-                        default= (25.955, 26.508),
-                        help="Zero point magnitides [Default:( 26.508, 25.955)]")
-    parser.add_argument('--gain', default=[2260,2100],
-                        help="Detector gain in e/ADU[Default:[2260,2100]")
-    parser.add_argument('--sf', default=0.316 ,
-                        help="Scale factor to correct for correlated noise[Default:0.316 ")
-    parser.add_argument('--manual_mask_file', default= 'manual_masks.txt',
-                        help="file containing regions that are to be masked [Default:'manual_masks.txt']")
-    parser.add_argument('--file_path', default= '/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/',
-                        help="Path of directory containing images[Default:'/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip] ")
-    parser.add_argument('--wht_path', default= '/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip',
-                        help="Path of directory containing weight files[Default:'/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip] ")
-    parser.add_argument('--out_path', default= '/nfs/slac/g/ki/ki19/deuce/AEGIS/output/',
-                        help="Path to where you want the output store [Default: /nfs/slac/g/ki/ki19/deuce/AEGIS/output] ")
-    parser.add_argument('--file_name', default='EGS_10134_seg_id_acs_wfc_filter_30mas_unrot_drz.fits',
-                        help="File name of image with 'seg_id' in place in place of actual segment id [Default:'EGS_10134_seg_id_acs_wfc_f606w_30mas_unrot_drz.fits']")
-    parser.add_argument('--wht_name', default='EGS_10134_seg_id_acs_wfc_filter_30mas_unrot_wht.fits',
-                        help="Weight file name of image with 'seg_id' in place in place of actual segment id [Default:'EGS_10134_seg_id_acs_wfc_f606w_30mas_unrot_wht.fits']")  
-    parser.add_argument('--det_im_file', default='/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/added/EGS_10134_seg_id_acs_wfc_30mas_unrot_added_drz.fits',
-                        help="File name of image used in detction")
-    parser.add_argument('--det_wht_file', default='/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/added/EGS_10134_seg_id_acs_wfc_30mas_unrot_added_rms.fits',
-                        help="Weight file name of image of image used in detction")  
-    parser.add_argument('--wht_type', default='MAP_WEIGHT',
-                        help="Weight file type")
-    parser.add_argument('--buffer', default=10,
-                        help="Number of pixels used as buffer around bright objects")
     parser.add_argument('--seg_id', default='1a',
-                        help="Segment id to run [Default:1a]")
-    parser.add_argument('--tt_file_path', default='/nfs/slac/g/ki/ki19/deuce/AEGIS/tt_starfield/',
-                        help="Path of directory contating modelled TT fileds [Default:'/nfs/slac/g/ki/ki19/deuce/AEGIS/tt_starfield/'] ")
-    parser.add_argument('--tt_file_name', default= 'TinyTim_focus.fits',
-                        help="Name of TT_field file [Default:TinyTim_focus.fits]")
-    parser.add_argument('--focus', default= [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5],
-                        help="List containg focus positions that have TT_fields")
+                        help="Segment id of image to run [Default:1a]")
+    parser.add_argument('--filter_names', default= ['f606ww','f814w'],
+                        help="names of filters [Default: ['f814w','f606w']]")
+    parser.add_argument('--file_path', default= '/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/',
+                        help="Path of directory containing input images",\
+                        "[Default:'/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip] ")
+    parser.add_argument('--wht_path', default= '/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip',
+                        help="Path of directory containing weight files",\
+                        "[Default:'/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip] ")
+    parser.add_argument('--out_path', default= '/nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_full/',
+                        help="Path to where you want the output stored",\
+                        "[Default: /nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_full]")
+    parser.add_argument('--file_name', default='EGS_10134_seg_id_acs_wfc_filter_30mas_unrot_drz.fits',
+                        help="File name of measurement image with 'seg_id' &",\
+                        "'filter' in place of image segment id and filter ",\
+                        "[Default:'EGS_10134_seg_id_acs_wfc_f606w_30mas_unrot_drz.fits']")
+    parser.add_argument('--wht_name', default='EGS_10134_seg_id_acs_wfc_filter_30mas_unrot_wht.fits',
+                        help="Name of weight map of measurment image with 'seg_id'",\
+                        "and 'filter' in place of image segment id and filter ",\
+                        "[Default:'EGS_10134_seg_id_acs_wfc_filter_30mas_unrot_wht.fits']")  
+    parser.add_argument('--det_im_file',
+                        default='added/EGS_10134_seg_id_acs_wfc_30mas_unrot_added_drz.fits',
+                        help="File name of image to run detetction on with '",\
+                        "'seg_id' in place of image segment id. ",\
+                        "[Default:'added/EGS_10134_seg_id_acs_wfc_30mas_unrot_added_drz.fits']") 
+    parser.add_argument('--det_wht_file',
+                        default='added/EGS_10134_seg_id_acs_wfc_30mas_unrot_added_rms.fits',
+                        help="Weight file name of image of image used in detection with '",\
+                        "'seg_id' in place of image segment id. ",\
+                        "[Default:'added/EGS_10134_seg_id_acs_wfc_30mas_unrot_added_rms.fits']") 
+    parser.add_argument('--wht_type', default='MAP_RMS',
+                        help="SExtractor Weight file type for measurment image.",\
+                        " Default='MAP_RMS'")
+    parser.add_argument('--det_wht_type', default='MAP_RMS',
+                        help="SExtractor Weight file type for detetction image.",\
+                        " Default='MAP_RMS'")
+    parser.add_argument('--buffer', default=10,
+                        help="Number of pixels used as buffer around bright ",\
+                        "objects in Hot-cold detection method.[Default:10(pixels)]")
+    parser.add_argument('--filter_spike_params', 
+                        default= [(0.0350087,64.0863,40.0,2.614),
+                                  (0.0367020,77.7674,40.0,2.180)],
+                        help="Params of diffraction spikes in each filter.",\
+                        "They must be in the same order as filter_names",\
+                        "[Default: [(0.0350087,64.0863,40.0,2.614), ",\
+                        "(0.0367020,77.7674,40.0,2.180)]]")
+    parser.add_argument('--star_galaxy_weights', 
+                        default= [19.4, 15.508, 0.945), (18.9, 14.955, 0.98)],
+                        help="Star galaxy seperation line parametrs",\
+                        " [Default:(x_div, y_div, slope)]")
+    parser.add_argument('--zero_point_mag', 
+                        default= (26.486, 25.937),
+                        help="Zero point magnitides for each band",\
+                        "[Default:(26.486, 25.937)]")
+    parser.add_argument('--gain', default=[2260,2100],
+                        help="Detector gain in e/ADU[Default:[2260,2100](s)]")
+    parser.add_argument('--sf', default=0.316 ,
+                        help="Scale factor to correct for correlated noise",\
+                        "[Default:0.316 ")
+    parser.add_argument('--manual_mask_file', default= 'manual_masks.txt',
+                        help="File containing regions that are to be masked",\
+                        " [Default:'manual_masks.txt']")
+    parser.add_argument('--tt_file_path', 
+                        default='/nfs/slac/g/ki/ki19/deuce/AEGIS/tt_starfield/',
+                        help="Path of directory contating modelled TT fileds",\
+                        "[Default:'/nfs/slac/g/ki/ki19/deuce/AEGIS/tt_starfield/']")
     args = parser.parse_args()
     params = Main_param(args)
     run_segment(params)
