@@ -162,7 +162,7 @@ def get_images(args, index_table,
         psf_hdul = fits.HDUList()
         for i in q:
             path = args.main_path + '/' + index_table['SEG_ID'][i]+'/postage_stamps/'
-            name = filt + '_' + index_table['SEG_ID'][i]+ '_' +str(index_table['NUMBER'][i])+'_image.fits'
+            name = filt + '_' + index_table['SEG_ID'][i]+ '_' +str(index_table['NUMBER'][i])+'_gal.fits'
             im_file=  path + name
             name = filt + '_' + index_table['SEG_ID'][i]+ '_' +str(index_table['NUMBER'][i])+'_psf.fits'
             psf_file =  path + name
