@@ -1,4 +1,34 @@
-SEG FILTER XMIN XMAX YMIN YMAX XSIZE YSIZE FILE
-1j f606w 2238 2656 3788 4127 418 339 /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f606w/EGS_10134_1j_acs_wfc_f606w_30mas_unrot_drz.fits
-1j f814w 2238 2656 3788 4127 418 339 /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f814w/EGS_10134_1j_acs_wfc_f814w_30mas_unrot_drz.fits
+SEG FILTER XMIN XMAX YMIN YMAX FILE
+1r f606w 1608 2028 2023 2167  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f606w/EGS_10134_1r_acs_wfc_f606w_30mas_unrot_drz.fits
+1r f814w 1608 2028 2023 2167  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f814w/EGS_10134_1r_acs_wfc_f814w_30mas_unrot_drz.fits
+01 f606w 3889 4523 6516 6586  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f606w/EGS_10134_01_acs_wfc_f606w_30mas_unrot_drz.fits
+01 f814w 3889 4523 6516 6586  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f814w/EGS_10134_01_acs_wfc_f814w_30mas_unrot_drz.fits
+1j f606w 2038 2213 3788 4127  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f606w/EGS_10134_1j_acs_wfc_f606w_30mas_unrot_drz.fits
+1j f814w 2038 2213 3788 4127  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f814w/EGS_10134_1j_acs_wfc_f814w_30mas_unrot_drz.fits
+1j f606w 2238 2656 3788 4127  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f606w/EGS_10134_1j_acs_wfc_f606w_30mas_unrot_drz.fits
+1j f814w 2238 2656 3788 4127  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f814w/EGS_10134_1j_acs_wfc_f814w_30mas_unrot_drz.fits
+19 f606w 925 1267 4778 4847  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f606w/EGS_10134_19_acs_wfc_f606w_30mas_unrot_drz.fits
+19 f814w 925 1267 4778 4847  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f814w/EGS_10134_19_acs_wfc_f814w_30mas_unrot_drz.fits
+0a f606w 1925 2330 5410 5590  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f606w/EGS_10134_0a_acs_wfc_f606w_30mas_unrot_drz.fits
+0a f814w 1925 2330 5410 5590  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f814w/EGS_10134_0a_acs_wfc_f814w_30mas_unrot_drz.fits
+0j f606w 2750 3000 2600 2900  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f606w/EGS_10134_0j_acs_wfc_f606w_30mas_unrot_drz.fits
+0j f814w 2750 3000 2600 2900  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f814w/EGS_10134_0j_acs_wfc_f814w_30mas_unrot_drz.fits
+1e f606w 5810 6130 3000 3400  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f606w/EGS_10134_1e_acs_wfc_f606w_30mas_unrot_drz.fits
+1e f814w 5810 6130 3000 3400  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f814w/EGS_10134_1e_acs_wfc_f814w_30mas_unrot_drz.fits
+07 f606w 6000 6400 6500 6900  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f606w/EGS_10134_07_acs_wfc_f606w_30mas_unrot_drz.fits
+07 f814w 6000 6400 6500 6900  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f814w/EGS_10134_07_acs_wfc_f814w_30mas_unrot_drz.fits
+0v f606w 2930 3155 2920 3250  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f606w/EGS_10134_0v_acs_wfc_f606w_30mas_unrot_drz.fits
+0v f814w 2930 3155 2920 3250  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f814w/EGS_10134_0v_acs_wfc_f814w_30mas_unrot_drz.fits
+09 f606w 4855 5350 3580 3755  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f606w/EGS_10134_09_acs_wfc_f606w_30mas_unrot_drz.fits
+09 f814w 4855 5350 3580 3755  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f814w/EGS_10134_09_acs_wfc_f814w_30mas_unrot_drz.fits
+0s f606w 5780 6030 1650 1900  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f606w/EGS_10134_0s_acs_wfc_f606w_30mas_unrot_drz.fits
+0s f814w 5780 6030 1650 1900  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f814w/EGS_10134_0s_acs_wfc_f814w_30mas_unrot_drz.fits
+1b f606w 4200 4450 2820 3015  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f606w/EGS_10134_1b_acs_wfc_f606w_30mas_unrot_drz.fits
+1b f814w 4200 4450 2820 3015  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f814w/EGS_10134_1b_acs_wfc_f814w_30mas_unrot_drz.fits
+15 f606w 3140 3410 900 1655 /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f606w/EGS_10134_15_acs_wfc_f606w_30mas_unrot_drz.fits
+15 f814w 3140 3410 900 1655  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f814w/EGS_10134_15_acs_wfc_f814w_30mas_unrot_drz.fits
+0c f606w 4455 4755 1390 1635  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f606w/EGS_10134_0c_acs_wfc_f606w_30mas_unrot_drz.fits
+0c f814w 4455 4755 1390 1635  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f814w/EGS_10134_0c_acs_wfc_f814w_30mas_unrot_drz.fits
+0t f606w 5410 5530 4950 5350  /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f606w/EGS_10134_0t_acs_wfc_f606w_30mas_unrot_drz.fits
+0t f814w 5410 5530 4950 5350 /nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/f814w/EGS_10134_0t_acs_wfc_f814w_30mas_unrot_drz.fits
 
