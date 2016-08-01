@@ -14,11 +14,21 @@ region  --buffer.
 Cleanup
 The detected objects are then classified into stars and galaxies depending on
 their position in the MAG_AUTO Vs MU_MAX plot. The seperation line is set 
-by star_galaxy_weights. Objects that lie on image edge are masked. Region around saturated stars are masked: masked 
-region set by filter_spike_params.Regions that were manually observed to
-have artefacts (eg.ghosts) and are to be masked are input as manual_mask_file.
+by star_galaxy_weights. Objects that lie on image edge are masked. Region around
+saturated stars are masked: masked region set by filter_spike_params.Regions 
+that were manually observed to have artefacts (eg.ghosts) and are to be masked 
+are input as manual_mask_file. final catalog is renumbered begining from 0.
+Bright and faint seg maps are combined to form a single segmentation map.
+The bright seg map objects are expanded by 10 pixels.
+Note: Value of object in seg map will be 1 higher than NUMBER in catalog. catalog
+numbers start at 0, while 0 in segmap is no object present. 
 
 Stars for PSF estimation
+select upto 25 stars with the highest SNR that are not masked. If theya are 
+detected as stars in all bands, have an image in tt_starfield within 200 pixels,
+and do not have any other objects nearby, they are saved to a list for psf 
+estimation. Postage stamps of these stars are also saved for manual inspection.
+
 
 """
 import asciidata
@@ -304,7 +314,7 @@ class GalaxyCatalog:
 
     def diffraction_mask_cleanup(self, catalog,
                                  diff_spike_params,  mag_cutoff = 19.0):
-        """masks objects too close to saturated stars."""
+        """Masks objects too close to saturated stars."""
         m = diff_spike_params[0] 
         b = diff_spike_params[1]
         w = diff_spike_params[2]*0.5
@@ -348,6 +358,8 @@ class GalaxyCatalog:
         return catalog
 
     def manual_mask_cleanup(self, catalog, filt):
+        """masks regions that were observed to have artefacts upon visual inspection
+        """
         val=np.zeros(len(catalog))
         col = Column(val, name='IN_MANUAL_MASK', 
                      description="In a manual mask region", dtype=int)
@@ -380,9 +392,12 @@ class GalaxyCatalog:
             out_name = filt
             class_catalog = out_dir + '/' + out_name + "_class.cat"
             catalog = Table.read(class_catalog, format="ascii.basic")
+            # Remove objects near edges
             catalog = self.remove_edge(catalog)
+            # remove objects in diffraction spike
             diff_spike_params = self.params.spike_params[filt]
             catalog = self.diffraction_mask_cleanup(catalog, diff_spike_params)
+            # remove objects in manual mask
             catalog = self.manual_mask_cleanup(catalog, filt)
             catalog = fn.renumber_table(catalog)
             catalog = fn.mask_it_table(catalog)
@@ -399,7 +414,7 @@ class GalaxyCatalog:
    
     def check_oth_obj(self, x0, y0,r,
                       filt, idx, out_dir):
-        ## Check multi objects in stamp
+        """Check if other objects are close to stars picked for psf estimation"""
         seg_name = out_dir + '/'+ filt +'_comb_seg_map.fits'
         seg_im = fn.get_subImage_pyfits(int(x0), int(y0), [int(r)]*8, seg_name,
                                       None, None, save_img=False)
@@ -410,7 +425,6 @@ class GalaxyCatalog:
             print "Multiple objects in star stamp for star {0}, object{1}".format(idx,oth_segs)
             return False
         return True
-
 
     def match_to_tt(self, catalog, out_dir,
                     filt, best_stars, dist=200.):
@@ -486,7 +500,7 @@ class GalaxyCatalog:
                 num+=1
     
     def combine_seg_map(self, filt,  out_dir):
-        ### combine seg map has value object number+1
+        """Combine bright and faint seg maps"""
         cat_name = out_dir + '/'+ filt +'_clean.cat'
         bright_name = out_dir + '/'+ filt +'_bright_seg_map.fits'
         faint_name = out_dir + '/'+ filt +'_faint_seg_map.fits'
