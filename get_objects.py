@@ -1,6 +1,10 @@
-"""Program to detect objects in a given image (segment) and make a catalog 
+""" Program Number: 1
+
+Program to detect objects in a given image (segment) and make a catalog 
 using sextractor. Objects are detected with the Hot-Cold method employed in
 Rix et al.(2004). 
+
+Requirements:
 
 SExtractor Detection:
 SExtractor is run in double image mode, with objects detected in det_im_file &
@@ -11,7 +15,7 @@ for Hot-Cold detetction are preset and not input  parametrs. The hot (faint)
 objects are merged with the cold(bright) catalog that aren't within buffer 
 region  --buffer.
 
-Cleanup
+Cleanup:
 Since the noise in the image is not uncorrelated (dut to multidrizzle), the snr
 computed from sextractor needs is modified by parameter scale factr --sf.
 The detected objects are then classified into stars and galaxies depending on
@@ -25,13 +29,16 @@ The bright seg map objects are expanded by 10 pixels.
 Note: Value of object in seg map will be 1 higher than NUMBER in catalog. catalog
 numbers start at 0, while 0 in segmap is no object present. 
 
-Stars for PSF estimation
+Stars for PSF estimation:
 select upto 25 stars with the highest SNR that are not masked. If theya are 
 detected as stars in all bands, have an image in tt_starfield within 200 pixels,
 and do not have any other objects nearby, they are saved to a list for psf 
 estimation. Postage stamps of these stars are also saved for manual inspection.
 
 
+Output: 
+Cleaned catalog , combined segmentation map, list of stars for PSF measuremnt,
+postage stamp images of those stars.
 """
 import asciidata
 from astropy.table import Table, Column, vstack
@@ -528,6 +535,8 @@ class GalaxyCatalog:
         new_seg_name = out_dir + '/'+ filt +'_comb_seg_map.fits'
         print "Bright faint combined seg map created at", new_seg_name
         pyfits.writeto(new_seg_name, new_seg, clobber=True)
+        os.remove(bright_name)
+        os.remove(faint_name)
   
     def generate_catalog(self):
         # create o/p folder if doesn't exist
@@ -567,6 +576,7 @@ class GalaxyCatalog:
             #Merge filtered faint catalog and bright catalog
             self.merge(filtered_faint_name, bright_catalog_name, 
                           out_name, out_dir)
+            os.remove(new_seg_map)
         # star-galaxy seperation
         self.classification(self.params.star_galaxy_weights, out_dir)   
         # Mark objects at the boundary and in diffraction spikes 
