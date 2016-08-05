@@ -1,6 +1,29 @@
 
-"""File to remove multiple galaxies in a given postage stamp
-@input galaxy file, segmentation map, noise file
+"""Program Number: 4
+Identifies multiple objects in the postage stamp of a galaxy, and replaces 
+the other object with noise
+
+Requirements:
+postage stamp of galaxy, corresponding segmentation map, noise file
+
+Identification:
+The segmentation map corresponding to the object is used to divide the
+postage stamp pixels into tho belonging to the main galaxy, other 
+objects and background. The pixels belonging to other objects are replaced
+by pixels from the noise file. 
+
+Replace pixels:
+The other object pixels are replaced with a region of noise map identical
+to the region of other object. This is done so as to preserve noise correlations.
+The noise pixels values are divided by its standard deviation and multiplied
+by the stdev of the background pixels of the postage stamp. 
+
+Stamp Stats:
+Some value are saved so that the GalSim COSMOSCatalog class may use to impose
+selection criteria on the quality of the postage stamps. 
+
+
+
 """
 from astropy.table import Table
 import pyfits
@@ -14,19 +37,17 @@ class Main_param:
         self.num = args.num
         self.path = args.main_path + '/' + self.seg_id + '/postage_stamps/'
         self.filters = args.filter_names
-        self.blank_file = args.blank_file
+        self.file_filter_name = args.file_filter_name
         string = args.main_string.replace('segid', self.seg_id) 
         string1 = string.replace('num', self.num)        
-        self.gal_files, self.psf_files = {}, {}
-        self.noise_file, self.seg_files = {}, {}
+        self.gal_files , self.noise_file, self.seg_files = {}, {}, {}
         n = len(self.filters)      
         for i in range(n):
             filter1 = self.filters[i]
             string2 = string1.replace('filter', filter1)
             self.gal_files[filter1] = self.path + string2 + args.image_string
-            self.psf_files[filter1] = self.path + string2 + args.psf_string
             self.seg_files[filter1] = self.path + string2 + args.seg_string
-            string3 = args.noise_file.replace('filter',filter1)
+            string3 = args.noise_file.replace('filter',args.file_filter_name[i])
             self.noise_file[filter1] = args.main_path + '/' + string3
 
 def div_pixels(seg_map, num):
@@ -111,7 +132,9 @@ def get_blank_reg(x_r, y_r, noise_file):
     bl_dat = hdu[0].data
     hdu.close()
     s = bl_dat.shape
+    print "x_r", x_r, 's', s
     x0_min = np.random.randint(s[0]-x_r)
+
     y0_min = np.random.randint(s[1]-y_r)
     x0_max = x0_min + x_r +1
     y0_max = y0_min + y_r +1
@@ -131,7 +154,7 @@ def change_others(arr, to_change,
     xr0 = xmax-xmin
     yr0 = ymax-ymin 
     # get noise pixels in a rectangle of size comparable to that which needs replaced  
-    bl_dat = get_blank_reg(xr0, yr0, bl_files,filt)
+    bl_dat = get_blank_reg(xr0, yr0, noise_file)
     # Change coords of pixels to change to satrt with (0,0)
     bl_change = np.array([to_change.T[0]-xmin, to_change.T[1]-ymin]).T
     # get noise pixel with same coordinates as to change pixels
@@ -184,7 +207,7 @@ def clean_pstamp(args):
             avg_flux = 0
             snr = -10
             info = [0, 0, 0 , min_dist, avg_flux, peak_val, snr]
-            np.savetxt(params.path + 'stamp_stats'+'/'+ params.num + '_'+ f1 + '.txt', info)
+            np.savetxt(params.path + 'stamp_stats'+'/'+ params.num + '_'+ filt + '.txt', info)
             new_im_name = params.path + filt + '_'+ params.seg_id + '_'+ params.num +'_gal.fits'
             pyfits.writeto(new_im_name, im_dat, im_hdr, clobber=True)
             continue
@@ -199,7 +222,7 @@ def clean_pstamp(args):
             avg_flux = get_avg_around_pix(pix_near_dist[0], pix_near_dist[1], im_dat)
             snr = get_snr(im_dat, b_std**2)
             info = [b_mean, b_std, np.sum(im_dat), min_dist, avg_flux, peak_val, snr ]
-            np.savetxt(params.path + 'stamp_stats'+'/'+ params.num + '_'+ f1 + '.txt', info)
+            np.savetxt(params.path + 'stamp_stats'+'/'+ params.num + '_'+ filt + '.txt', info)
             new_im_name = params.path + filt + '_'+ params.seg_id + '_'+ params.num +'_gal.fits'
             pyfits.writeto(new_im_name, im_dat, im_hdr, clobber=True)
             continue
@@ -211,7 +234,8 @@ def clean_pstamp(args):
             print 'MASKING: ', len(oth[oth_seg]) , ' pixels out of ', seg_dat.size 
             print " Noise file used ", params.noise_file
             dist, pix = get_min_dist(x0,y0, np.array(oth[oth_seg]))
-            new_im = change_others(new_im, np.array(oth[oth_seg]), params.noise_file[filt], b_std)
+            noise_file = params.noise_file[filt]
+            new_im = change_others(new_im, np.array(oth[oth_seg]), noise_file, b_std)
             min_dists.append(dist)
             pix_min_dists.append(pix)           
         min_dist = np.min(min_dists)
@@ -224,32 +248,34 @@ def clean_pstamp(args):
         print 'CREATED NEW POSTAGE STAMP', new_im_name
         pyfits.writeto(new_im_name, new_im, im_hdr, clobber=True)
 
-
-
 if __name__ == '__main__':
     import subprocess
     import galsim
     import numpy as np
     from argparse import ArgumentParser
     parser = ArgumentParser()
-    parser.add_argument('--filter_names', default= ['f606w','f814w'],
-                        help="names of filters [Default: ['f606w','f814w']]")
-    parser.add_argument('--noise_file', type=str, default = 'acs_filter_unrot_sci_noise.fits' ,
-                        help="File containing noise in each band [Default:'acs_filter_unrot_sci_noise.fits']] ")
-    parser.add_argument('--main_path', default= '/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/AEGIS_full_catalog/',
-                        help="Path where image files are stored [Default:/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/AEGIS_full/] ")
-    parser.add_argument('--main_string', default='filter_segid_num_',
-                        help="String of file name with 'ident','segid','filter' instead[Default:'ident_segid_filter_']")
-    parser.add_argument('--image_string', default='image.fits',
-                        help="String of galaxy image file [Default:'image.fits']")
-    parser.add_argument('--psf_string', default='psf.fits',
-                        help="String of PSF file[Default:'psf.fits']")
-    parser.add_argument('--seg_string', default='seg.fits',
-                        help="String of segmentation map file[Default:'seg.fits']")
-    parser.add_argument('--seg_id', default='0c',
-                        help="Seg id of galaxy to run [Default:'0a']")
+    parser.add_argument('--seg_id', default='1a',
+                        help="Segment id of image to run [Default:1a]")
     parser.add_argument('--num', default='0',type=str,
                         help="Identifier of galaxy to run [Default:0")
+    parser.add_argument('--filter_names', default= ['f606w','f814w'],
+                        help="names of filters [Default: ['f814w','f606w']]")
+    parser.add_argument('--noise_file', type=str, default = 'acs_filter_unrot_sci_noise.fits' ,
+                        help="File containing noise in each band, with band name \
+                        replaced by'filter'[Default:'acs_filter_unrot_sci_noise.fits']] ")
+    parser.add_argument('--file_filter_name', default =['V', 'I'] ,
+                        help="Name of filter to use ")
+    parser.add_argument('--main_path', 
+                        default= '/nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_full/',
+                        help="Path where image files are stored \
+                        [Default:'/nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_full/'] ")
+    parser.add_argument('--main_string', default='filter_segid_num_',
+                        help="String of file name with 'ident','segid','filter' \
+                        instead[Default:'ident_segid_filter_']")
+    parser.add_argument('--image_string', default='image.fits',
+                        help="String of saved galaxy image file [Default:'image.fits']")
+    parser.add_argument('--seg_string', default='seg.fits',
+                        help="String of saved  segmentation map file[Default:'seg.fits']")
     parser.add_argument('--pixel_scale', default='0.03',
                         help="Pixel scale of galaxy image[Default:'0.03' #arcsec/pixel]")
     args = parser.parse_args()

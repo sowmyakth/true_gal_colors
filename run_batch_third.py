@@ -8,15 +8,15 @@ def run_clean_pstamps():
     for fl in glob.glob('outfile/out_3_seg_*'):
         os.remove(fl)
     file_name ='/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/seg_ids.txt'
-    all_seg_ids = np.loadtxt(file_name, delimiter=" ",dtype='S2')
+    #all_seg_ids = np.loadtxt(file_name, delimiter=" ",dtype='S2')
     #all_seg_ids = ['06']
     #Re running on images that failed
-    #all_seg_ids, num = np.loadtxt('run_again.txt', delimiter=" ",dtype='S8').T
+    all_seg_ids, num = np.loadtxt('run_again.txt', delimiter=" ",dtype='S8').T
     for seg_id in all_seg_ids:
         print 'SEG ID ', seg_id
         outfile = 'outfile/out_3_seg_{0}.txt'.format(seg_id)
         com = 'python run_clean_seg.py --seg_id='+ seg_id
-        final_args =['bsub', '-W' , '0:55','-o', outfile, com ]    
+        final_args =['bsub', '-W' , '1:55','-o', outfile, com ]    
         subprocess.call(final_args)
 
 if __name__ == '__main__':

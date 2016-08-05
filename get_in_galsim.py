@@ -58,6 +58,7 @@ def get_main_catalog(args, index_table):
     all_seg_ids = np.loadtxt(args.seg_list_file, delimiter=" ",dtype='S2')
     for f, filt in enumerate(args.filter_names):
     	final_table = main_table()
+        complete_table=Table()
         for seg_id in all_seg_ids:
             file_name = args.main_path + seg_id + '/' + filt + '_with_pstamp.cat'
             seg_cat = Table.read(file_name, format='ascii.basic')
@@ -68,22 +69,32 @@ def get_main_catalog(args, index_table):
             temp.add_column(col)
             temp.rename_column('MAG_AUTO', 'MAG')
             temp.rename_column('HDU', 'GAL_HDU')
+            temp.rename_column('ALPHA_SKY', 'RA')
+            temp.rename_column('DELTA_SKY', 'DEC')
             p_scales = np.ones(len(q))*0.03
             weights = np.ones(len(q))
             im = [args.gal_im_name.replace('filter', args.file_filter_name[f])]*len(q)
             im_names = [im[i].replace('umber',str(temp['FILE_NUM'][i])) for i in range(len(im))]
             psf = [args.psf_im_name.replace('filter', args.file_filter_name[f])]*len(q)
             psf_names = [psf[i].replace('umber',str(temp['FILE_NUM'][i])) for i in range(len(psf))]
-            names = ('WEIGHT','GAL_FILENAME', 'PSF_FILENAME', 'PIXEL_SCALE')
-            dtype =('f8', 'S256', 'S288', 'f8')
-            tab = [weights, im_names, psf_names, p_scales]
+            noise_names=[args.noise_file_name.replace('filter', args.file_filter_name[f])]*len(q)
+            names = ('WEIGHT','GAL_FILENAME', 'PSF_FILENAME',
+                     'PIXEL_SCALE', 'NOISE_FILENAME')
+            dtype =('f8', 'S256', 'S288', 'f8', 'S208')
+            tab = [weights, im_names, psf_names, p_scales, noise_names]
             temp2 = Table(tab, names=names, dtype=dtype)
             temp = hstack([temp,temp2])
             final_table = vstack([final_table,temp], join_type='inner')
+            complete_table = vstack([complete_table,temp])
         path = args.main_path + args.out_dir 
         cat_name = args.cat_name.replace('filter', args.file_filter_name[f])
-        final_table.write(path + cat_name, format='fits')
+        final_table[index_table['ORDER']].write(path + cat_name, format='fits')
         print "Savings fits file at ", path + cat_name
+        cat_name = 'complete_' + args.cat_name.replace('filter', args.file_filter_name[f])
+        complete_table[index_table['ORDER']].write(args.main_path + cat_name, format='fits')
+        cat_name = 'index_table' + args.cat_name.replace('filter', args.file_filter_name[f])
+        index_table[index_table['ORDER']].write(args.main_path + cat_name, format='fits')
+        
 
 def get_selection_catalog(args, index_table):
     """Make catlog containing info about all galaxies in final catalog.
@@ -103,7 +114,7 @@ def get_selection_catalog(args, index_table):
             final_table = vstack([final_table,temp], join_type='inner')
         path = args.main_path + args.out_dir 
         file_name = args.selec_file_name.replace('filter', args.file_filter_name[f])
-        final_table.write(path + file_name, format='fits')
+        final_table[index_table['ORDER']].write(path + file_name, format='fits')
         print "Savings fits file at ", path + file_name
 
 def get_fits_catalog(args, index_table):
@@ -146,7 +157,7 @@ def get_fits_catalog(args, index_table):
         file_name = args.fits_file_name.replace('filter', args.file_filter_name[f])
         print "Savings fits file at ", path + file_name
         #import ipdb;ipdb.set_trace()
-        final_table.write(path + file_name, format='fits')
+        final_table[index_table['ORDER']].write(path + file_name, format='fits')
 
 
 def get_images(args, index_table,
@@ -188,31 +199,31 @@ def assign_num(args):
     seed =122
     np.random.seed(seed)
     print "Assigning number"
-    names = ('SEG_ID', 'NUMBER', 'IDENT', 'FILE_NUM', 'HDU')
-    dtype = ('string', 'int', 'int' ,'int', 'int')
+    names = ('SEG_ID', 'NUMBER', 'IDENT')
+    dtype = ('string', 'int', 'int') 
     index_table = Table(names=names, dtype = dtype)
     ident = 0
     #objects detected same in all filters. So read catalog only of first filter
     filt = args.filter_names[0]
     all_seg_ids = np.loadtxt(args.seg_list_file, delimiter=" ",dtype='S2')
     for seg_id in all_seg_ids:
-        #for filt in args.filter_names
-        #    seg_cat = Table.read()
-        #    mag.append(seg_cat['MAG_AUTO'])
-        #cond1 = (np.max(np.array(mag).T, axis=1) < args.mag_cutoff)
         file_name = args.main_path + seg_id + '/' + filt + '_with_pstamp.cat'
         catalog = Table.read(file_name, format='ascii.basic')
         idents = range(ident,ident+len(catalog))
         seg_ids = [seg_id]*len(catalog)
-        numbers = catalog['NUMBER']
-        file_nums = np.array(idents)/1000 + 1
-        hdus= np.zeros(len(catalog))
-        temp = Table([seg_ids, numbers, idents, file_nums, hdus],names=names, dtype = dtype)
+        numbers = catalog['NUMBER']       
+        temp = Table([seg_ids, numbers,idents],names=names, dtype = dtype)
         index_table = vstack([index_table,temp])
         ident+=len(catalog)
-    val = range(len(index_table))
-    np.random.shuffle(val)
-    return index_table[val]
+    order_idents = range(len(index_table))
+    np.random.shuffle(order_idents)
+    file_nums = np.array(order_idents)/1000 + 1
+    hdus= np.zeros(len(order_idents))
+    names = ('ORDER', 'FILE_NUM', 'HDU')
+    dtype = ('int' ,'int', 'int')
+    temp = Table([order_idents,file_nums,hdus], names=names, dtype=dtype)
+    index_table = hstack([index_table,temp])
+    return index_table
 
 
 
@@ -237,6 +248,8 @@ if __name__ == '__main__':
                         help="Final name of PSF images")
     parser.add_argument('--selec_file_name', default = "AEGIS_catalog_filter_25.2_selection.fits",
                         help="Catalog with selection information")
+    parser.add_argument('--noise_file_name', default = "acs_filter_unrot_sci_cf.fits",
+                        help="File with correlation function of noise")
     parser.add_argument('--file_filter_name', default =['V', 'I'] ,
                         help="Name of filter to use ")
     parser.add_argument('--fits_file_name', default = "AEGIS_catalog_filter_25.2_fits.fits",

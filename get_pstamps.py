@@ -28,6 +28,7 @@ import get_objects as go
 import subprocess
 import pyfits
 from astropy.table import Table, Column
+from scipy import stats
 
 
 def run(params):
@@ -48,10 +49,6 @@ def run(params):
         #make new column to indicate if postamp is created for that object
         col= Column(np.zeros(len(catalog)),name='IS_PSTAMP',dtype='int',
                     description = 'created postage stamp' )
-        catalog.add_column(col)
-        # column to save focus
-        col= Column(np.zeros(len(catalog)),name='FOCUS',dtype='int',
-                    description = 'Focus of image' )
         catalog.add_column(col)
         catalogs.append(catalog)
         tt_file = params.tt_file_path + "/" + filt + "/{}_stars.txt".format(filt)
@@ -99,9 +96,12 @@ def run(params):
     #save catalogs 
     for f,filt in enumerate(params.filters):
         a = np.loadtxt(out_dir+filt+'_focus_with_num_stars.txt')
-        focus[filt] = np.mode(a.T[1])
-        print "Focus is ", focus
-        catalogs['FOCUS'] = focus
+        focus[filt] = int(stats.mode(a.T[1]).mode[0])
+        print "Focus is ", focus[filt]
+        # column to save focus
+        col= Column(np.ones(len(catalog))*focus[filt], name='FOCUS',
+                    dtype='int', description = 'Focus of image')
+        catalogs[f].add_column(col)
         catalogs[f]['IS_PSTAMP'][obj_ids] = 1
         cat_name = out_dir + '/' + filt + "_full.cat"
         catalogs[f].write(cat_name, format="ascii.basic")
@@ -127,17 +127,13 @@ def run(params):
         #import ipdb; ipdb.set_trace()
         for f, filt in enumerate(params.filters):
             tt_pos = idx[3][num][f]
-            gal_file_name = out_dir + 'postage_stamps/' + filt + '_' + 
-                            params.seg_id + '_' + str(i)+'_image.fits'
-            psf_file_name = out_dir + 'postage_stamps/' + filt + '_' + 
-                            params.seg_id + '_' + str(i)+'_psf.fits'
-            seg_file_name = out_dir + 'postage_stamps/' + filt + '_' + 
-                            params.seg_id + '_' + str(i)+'_seg.fits'
+            gal_file_name = out_dir + 'postage_stamps/' + filt + '_' + params.seg_id + '_' + str(i)+'_image.fits'
+            psf_file_name = out_dir + 'postage_stamps/' + filt + '_' + params.seg_id + '_' + str(i)+'_psf.fits'
+            seg_file_name = out_dir + 'postage_stamps/' + filt + '_' + params.seg_id + '_' + str(i)+'_seg.fits'
             gal_name = params.data_files[filt]
             gal_image = fn.get_subImage_pyfits(x0,y0, stamp_size, gal_name,
-                                               None, None, save_img=False)
-            val = focus[filt]
-            psf_name = params.tt_file_path + filt +'/'+ params.tt_file_name[val]
+                                               None, None, save_img=False) 
+            psf_name = params.tt_file_path + filt +'/'+ params.tt_file_name[focus[filt]]
             psf_image = fn.get_subImage_pyfits(tt_pos[0],tt_pos[1], psf_stamp_size,
                                                psf_name, None, None, save_img=False)
             seg_name = out_dir + filt +'_comb_seg_map.fits'

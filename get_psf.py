@@ -191,28 +191,28 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--seg_id', default='1a',
                         help="Segment id of image to run [Default:1a]")
-    parser.add_argument('--filter_names', default= ['f606ww','f814w'],
+    parser.add_argument('--filter_names', default= ['f606w','f814w'],
                         help="names of filters [Default: ['f814w','f606w']]")
     parser.add_argument('--bad_stars_file', default= 'bad_stars.txt',
-                        help="File containing index of strs that should not be ",\
-                        "used in PSF estimation [Default:'bad_stars.txt'] ")
+                        help="File containing index of strs that should not be  \
+                        used in PSF estimation [Default:'bad_stars.txt'] ")
     parser.add_argument('--file_path', default= '/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/',
-                        help="Path of directory containing input images",\
-                        "[Default:'/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip] ")
+                        help="Path of directory containing input images \
+                        [Default:'/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip] ")
     parser.add_argument('--file_name', default='EGS_10134_seg_id_acs_wfc_filter_30mas_unrot_drz.fits',
-                        help="File name of measurement image with 'seg_id' &",\
-                        "'filter' in place of image segment id and filter ",\
-                        "[Default:'EGS_10134_seg_id_acs_wfc_f606w_30mas_unrot_drz.fits']")
+                        help="File name of measurement image with 'seg_id' & \
+                        'filter' in place of image segment id and filter  \
+                        [Default:'EGS_10134_seg_id_acs_wfc_f606w_30mas_unrot_drz.fits']")
     parser.add_argument('--out_path', default= '/nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_full/',
-                        help="Path to where you want the output stored",\
-                        "[Default: /nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_full]")
+                        help="Path to where you want the output stored \
+                        [Default: /nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_full]")
     parser.add_argument('--tt_file_path', 
                         default='/nfs/slac/g/ki/ki19/deuce/AEGIS/tt_starfield/',
-                        help="Path of directory contating modelled TT fileds",\
-                        "[Default:'/nfs/slac/g/ki/ki19/deuce/AEGIS/tt_starfield/']")
+                        help="Path of directory contating modelled TT fileds \
+                        [Default:'/nfs/slac/g/ki/ki19/deuce/AEGIS/tt_starfield/']")
     parser.add_argument('--tt_file_name', default= 'TinyTim_focus.fits',
-                        help="TT_field file name  with 'focus' in place of actual focus",\
-                        "[Default:TinyTim_focus.fits]")
+                        help="TT_field file name  with 'focus' in place of actual focus \
+                        [Default:TinyTim_focus.fits]")
     parser.add_argument('--focus',
                         default= [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5],
                         help="List containg focus positions that have TT_fields")

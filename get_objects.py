@@ -6,6 +6,7 @@ Rix et al.(2004).
 
 Requirements:
 
+
 SExtractor Detection:
 SExtractor is run in double image mode, with objects detected in det_im_file &
 det_wht_file as weight map. These detected objects are then measures in each
@@ -59,11 +60,10 @@ class Main_param:
         self.file_name = args.file_name.replace('seg_id', self.seg_id)
         self.wht_name = args.wht_name.replace('seg_id', self.seg_id) 
         self.det_im_file = args.det_im_file.replace('seg_id', self.seg_id)
-        self.det_wht_file = args.det_wht_file.replace('seg_id', self.seg_id)  
+        self.det_wht_file = args.det_wht_file.replace('seg_id', self.seg_id)        
         self.filters = args.filter_names
         self.out_path = args.out_path
         self.tt_file_path = args.tt_file_path       
-        self.focus = args.focus
         self.sf = args.sf
         self.wht_type = args.wht_type
         self.det_wht_type = args.det_wht_type
@@ -83,14 +83,14 @@ class Main_param:
         self.data_files, self.wht_files = {}, {}
         for i in range(len(self.filters)):
             filter1 = self.filters[i]
-            self.data_files[filter1] = self.file_path + filter1 + 
-                                       '/' + self.file_name.replace('filter', filter1)
-            self.wht_files[filter1] = self.wht_path + filter1 + '/' + 
-                                      self.wht_name.replace('filter',filter1)
+            self.data_files[filter1] = self.file_path + filter1 + '/' + self.file_name.replace('filter', filter1)
+            self.wht_files[filter1] = self.wht_path + filter1 + '/' + self.wht_name.replace('filter',filter1)
             self.spike_params[filter1] = args.filter_spike_params[i] 
             self.zero_point_mag[filter1] = args.zero_point_mag[i]
             self.star_galaxy_weights[filter1] = args.star_galaxy_weights[i]
             self.gain[filter1] = args.gain[i]
+        self.det_im_file = self.file_path + self.det_im_file
+        self.det_wht_file = self.wht_path + self.det_wht_file
 
 def run_segment(params):
     """Find objects in individual segments.
@@ -201,7 +201,7 @@ class GalaxyCatalog:
         config_ascii[0][1] = 'PARAMETERS_NAME'
         config_ascii[1][1] = out_dir+"/sex_out.param"
         config_ascii[0][2] = 'WEIGHT_TYPE'
-        config_ascii[1][2] = str(self.params.wht_type, self.params.det_wht_type)   #### check if it should ne MAP_RMS
+        config_ascii[1][2] = str(self.params.wht_type + ','+  self.params.det_wht_type) 
         config_ascii[0][3] = 'WEIGHT_IMAGE'
         config_ascii[1][3] = str(wht_files[0] + ','+ wht_files[1])
         row_counter = 4
@@ -592,71 +592,71 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--seg_id', default='1a',
                         help="Segment id of image to run [Default:1a]")
-    parser.add_argument('--filter_names', default= ['f606ww','f814w'],
+    parser.add_argument('--filter_names', default= ['f606w','f814w'],
                         help="names of filters [Default: ['f814w','f606w']]")
     parser.add_argument('--file_path', default= '/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/',
-                        help="Path of directory containing input images",\
-                        "[Default:'/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip] ")
+                        help="Path of directory containing input images \
+                        [Default:'/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip] ")
     parser.add_argument('--wht_path', default= '/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip',
-                        help="Path of directory containing weight files",\
-                        "[Default:'/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip] ")
+                        help="Path of directory containing weight files \
+                        [Default:'/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip] ")
     parser.add_argument('--out_path', default= '/nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_full/',
-                        help="Path to where you want the output stored",\
-                        "[Default: /nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_full]")
+                        help="Path to where you want the output stored \
+                        [Default: /nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_full]")
     parser.add_argument('--file_name', default='EGS_10134_seg_id_acs_wfc_filter_30mas_unrot_drz.fits',
-                        help="File name of measurement image with 'seg_id' &",\
-                        "'filter' in place of image segment id and filter ",\
-                        "[Default:'EGS_10134_seg_id_acs_wfc_f606w_30mas_unrot_drz.fits']")
+                        help="File name of measurement image with 'seg_id' & \
+                        'filter' in place of image segment id and filter \
+                        [Default:'EGS_10134_seg_id_acs_wfc_f606w_30mas_unrot_drz.fits']")
     parser.add_argument('--wht_name', default='EGS_10134_seg_id_acs_wfc_filter_30mas_unrot_wht.fits',
-                        help="Name of weight map of measurment image with 'seg_id'",\
-                        "and 'filter' in place of image segment id and filter ",\
-                        "[Default:'EGS_10134_seg_id_acs_wfc_filter_30mas_unrot_wht.fits']")  
+                        help="Name of weight map of measurment image with 'seg_id' \
+                        and 'filter' in place of image segment id and filter  \
+                        [Default:'EGS_10134_seg_id_acs_wfc_filter_30mas_unrot_wht.fits']")  
     parser.add_argument('--det_im_file',
                         default='added/EGS_10134_seg_id_acs_wfc_30mas_unrot_added_drz.fits',
-                        help="File name of image to run detetction on with '",\
-                        "'seg_id' in place of image segment id. ",\
-                        "[Default:'added/EGS_10134_seg_id_acs_wfc_30mas_unrot_added_drz.fits']") 
+                        help="File name of image to run detetction on with '\
+                        'seg_id' in place of image segment id. \
+                        [Default:'added/EGS_10134_seg_id_acs_wfc_30mas_unrot_added_drz.fits']") 
     parser.add_argument('--det_wht_file',
                         default='added/EGS_10134_seg_id_acs_wfc_30mas_unrot_added_rms.fits',
-                        help="Weight file name of image of image used in detection with '",\
-                        "'seg_id' in place of image segment id. ",\
-                        "[Default:'added/EGS_10134_seg_id_acs_wfc_30mas_unrot_added_rms.fits']") 
+                        help="Weight file name of image of image used in detection with ' \
+                        'seg_id' in place of image segment id. \
+                        [Default:'added/EGS_10134_seg_id_acs_wfc_30mas_unrot_added_rms.fits']") 
     parser.add_argument('--wht_type', default='MAP_RMS',
-                        help="SExtractor Weight file type for measurment image.",\
-                        " Default='MAP_RMS'")
+                        help="SExtractor Weight file type for measurment image. \
+                        Default='MAP_RMS'")
     parser.add_argument('--det_wht_type', default='MAP_RMS',
-                        help="SExtractor Weight file type for detetction image.",\
-                        " Default='MAP_RMS'")
+                        help="SExtractor Weight file type for detetction image. \
+                         Default='MAP_RMS'")
     parser.add_argument('--buffer', default=10,
-                        help="Number of pixels used as buffer around bright ",\
-                        "objects in Hot-cold detection method.[Default:10(pixels)]")
+                        help="Number of pixels used as buffer around bright \
+                        objects in Hot-cold detection method.[Default:10(pixels)]")
     parser.add_argument('--filter_spike_params', 
                         default= [(0.0350087,64.0863,40.0,2.614),
                                   (0.0367020,77.7674,40.0,2.180)],
-                        help="Params of diffraction spikes in each filter.",\
-                        "They must be in the same order as filter_names",\
-                        "[Default: [(0.0350087,64.0863,40.0,2.614), ",\
-                        "(0.0367020,77.7674,40.0,2.180)]]")
+                        help="Params of diffraction spikes in each filter. \
+                        They must be in the same order as filter_names \
+                        [Default: [(0.0350087,64.0863,40.0,2.614),  \
+                        (0.0367020,77.7674,40.0,2.180)]]")
     parser.add_argument('--star_galaxy_weights', 
-                        default= [19.4, 15.508, 0.945), (18.9, 14.955, 0.98)],
-                        help="Star galaxy seperation line parametrs",\
-                        " [Default:(x_div, y_div, slope)]")
+                        default= [(19.4, 15.508, 0.945), (18.9, 14.955, 0.98)],
+                        help="Star galaxy seperation line parametrs \
+                        [Default:(x_div, y_div, slope)]")
     parser.add_argument('--zero_point_mag', 
                         default= (26.486, 25.937),
-                        help="Zero point magnitides for each band",\
-                        "[Default:(26.486, 25.937)]")
+                        help="Zero point magnitides for each band \
+                        [Default:(26.486, 25.937)]")
     parser.add_argument('--gain', default=[2260,2100],
                         help="Detector gain in e/ADU[Default:[2260,2100](s)]")
     parser.add_argument('--sf', default=0.316 ,
-                        help="Scale factor to correct for correlated noise",\
-                        "[Default:0.316 ")
+                        help="Scale factor to correct for correlated noise \
+                        [Default:0.316 ")
     parser.add_argument('--manual_mask_file', default= 'manual_masks.txt',
-                        help="File containing regions that are to be masked",\
-                        " [Default:'manual_masks.txt']")
+                        help="File containing regions that are to be masked\
+                        [Default:'manual_masks.txt']")
     parser.add_argument('--tt_file_path', 
                         default='/nfs/slac/g/ki/ki19/deuce/AEGIS/tt_starfield/',
-                        help="Path of directory contating modelled TT fileds",\
-                        "[Default:'/nfs/slac/g/ki/ki19/deuce/AEGIS/tt_starfield/']")
+                        help="Path of directory contating modelled TT fileds \
+                        [Default:'/nfs/slac/g/ki/ki19/deuce/AEGIS/tt_starfield/']")
     args = parser.parse_args()
     params = Main_param(args)
     run_segment(params)

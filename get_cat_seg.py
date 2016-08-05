@@ -50,7 +50,7 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--seg_id', default= ['0a'],
                         help="id of segment to run [Default: ['0a']]")
-    parser.add_argument('--filter', default= ['f814w'],
+    parser.add_argument('--filter', default= 'f814w',
                         help="filter of segment to run [Default: ['f814w']]")
     parser.add_argument('--main_path',
                         default = '/nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_full/')
