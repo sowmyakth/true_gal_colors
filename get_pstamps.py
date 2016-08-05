@@ -68,7 +68,7 @@ def run(params):
             cond2 = (catalogs[f]['IN_MASK'][i] == 0)
             cond3 = (catalogs[f]['SNR'][i] >= 0)
             cond4 = (catalogs[f]['MULTI_DET'][i] == 0)
-            cond5 = (catalogs[f]['MAG_AUTO'][i] <= 25.2)
+            cond5 = (catalogs[f]['MAG_AUTO'][i] <= 30)
             if  cond1 and cond2 and cond3 and cond4 and cond5:
                 t = (catalogs[f]['THETA_IMAGE'][int(i)])*np.pi/180.
                 e = catalogs[f]['ELLIPTICITY'][int(i)]

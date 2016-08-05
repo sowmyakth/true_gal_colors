@@ -92,7 +92,7 @@ def get_main_catalog(args, index_table):
         print "Savings fits file at ", path + cat_name
         cat_name = 'complete_' + args.cat_name.replace('filter', args.file_filter_name[f])
         complete_table[index_table['ORDER']].write(args.main_path + cat_name, format='fits')
-        cat_name = 'index_table' + args.cat_name.replace('filter', args.file_filter_name[f])
+        cat_name = 'index_table_' + args.cat_name.replace('filter', args.file_filter_name[f])
         index_table[index_table['ORDER']].write(args.main_path + cat_name, format='fits')
         
 
@@ -246,13 +246,13 @@ if __name__ == '__main__':
                         help="Final name of galaxy images")
     parser.add_argument('--psf_im_name', default = "AEGIS_galaxy_PSF_images_filter_25.2_number.fits",
                         help="Final name of PSF images")
-    parser.add_argument('--selec_file_name', default = "AEGIS_catalog_filter_25.2_selection.fits",
+    parser.add_argument('--selec_file_name', default = "AEGIS_galaxy_catalog_filter_25.2_selection.fits",
                         help="Catalog with selection information")
     parser.add_argument('--noise_file_name', default = "acs_filter_unrot_sci_cf.fits",
                         help="File with correlation function of noise")
     parser.add_argument('--file_filter_name', default =['V', 'I'] ,
                         help="Name of filter to use ")
-    parser.add_argument('--fits_file_name', default = "AEGIS_catalog_filter_25.2_fits.fits",
+    parser.add_argument('--fits_file_name', default = "AEGIS_galaxy_catalog_filter_25.2_fits.fits",
                         help="Name of Catalog with fit information")
     parser.add_argument('--seg_list_file', default ='/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/seg_ids.txt',
                         help="file with all seg id names" )
