@@ -134,7 +134,6 @@ def get_fits_catalog(args, index_table):
             temp.rename_column('FLUX_RADIUS', 'flux_radius')            
             col = Column(temp['stamp_flux'], name='flux')
             temp.add_column(col)
-            zphot = np.zeros(len(q))
             fit_mad_s = np.zeros(len(q))
             fit_mad_b= np.zeros(len(q))
             fit_dvc_btt = np.zeros(len(q))
@@ -144,11 +143,11 @@ def get_fits_catalog(args, index_table):
             sersicfit = [[0]*8]*len(q)
             bulgefit = [[0]*16]*len(q)
             hlr = [[0]*3]*len(q)
-            names = ('zphot','fit_mad_s', 'fit_mad_b', 'fit_dvc_btt', 'use_bulgefit')
+            names = ('fit_mad_s', 'fit_mad_b', 'fit_dvc_btt', 'use_bulgefit')
             names+= ('viable_sersic', 'fit_status', 'sersicfit', 'bulgefit', 'hlr')
-            dtype =('f8', 'f8', 'f8', 'f8','i4')
+            dtype =('f8', 'f8', 'f8','i4')
             dtype+=('i4', 'i4','f8', 'f8', 'f8')
-            tab = [zphot, fit_mad_s, fit_mad_b, fit_dvc_btt, use_bulgefit]
+            tab = [fit_mad_s, fit_mad_b, fit_dvc_btt, use_bulgefit]
             tab+= [viable_sersic, fit_status, sersicfit, bulgefit, hlr]
             temp2 = Table(tab, names=names, dtype=dtype)
             temp = hstack([temp,temp2])

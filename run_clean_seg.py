@@ -21,7 +21,7 @@ def run_clean_seg(args):
     for num in  obj_list:
         outfile = 'outfile/out_3_{0}_{1}.txt'.format(seg_id, num)
         com = 'python clean_pstamp.py'# --main_path='+ path
-        final_args =['bsub', '-W' , '0:25',  '-o',outfile, com]
+        final_args =['bsub', '-W' , '0:25', com]
         final_args.append("--seg_id=" + seg_id)
         final_args.append("--num=" + str(num))
         subprocess.call(final_args)
