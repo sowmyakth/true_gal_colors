@@ -31,8 +31,7 @@ from astropy.table import Table, Column
 from scipy import stats
 
 
-def run(params):
-    focus={}
+def run(params, focus):
     # Remove existing postage stamp images, or creates new folder
     out_dir = params.out_path + params.seg_id+ '/'
     if os.path.isdir(out_dir + 'postage_stamps') is True:
@@ -63,12 +62,13 @@ def run(params):
         y_sizes = []
         pos=[]
         # Select objects that satisfy criterion
-        for f,filter in enumerate(params.filters):
+        for f,filt in enumerate(params.filters):
             cond1 = (catalogs[f]['IS_STAR'][i] == 0)
             cond2 = (catalogs[f]['IN_MASK'][i] == 0)
             cond3 = (catalogs[f]['SNR'][i] >= 0)
             cond4 = (catalogs[f]['MULTI_DET'][i] == 0)
-            cond5 = (catalogs[f]['MAG_AUTO'][i] <= 30.)
+            #Placing magnitude cut on only last filter
+            cond5 = (catalogs[-1]['MAG_AUTO'][i] <= 25.2)
             if  cond1 and cond2 and cond3 and cond4 and cond5:
                 t = (catalogs[f]['THETA_IMAGE'][int(i)])*np.pi/180.
                 e = catalogs[f]['ELLIPTICITY'][int(i)]
@@ -94,10 +94,7 @@ def run(params):
     # save list with NUMBER of all objects with pstamps
     np.savetxt(out_dir+'objects_with_p_stamps.txt', obj_ids, fmt="%i")
     #save catalogs 
-    for f,filt in enumerate(params.filters):
-        a = np.loadtxt(out_dir+filt+'_focus_with_num_stars.txt')
-        focus[filt] = int(stats.mode(a.T[1]).mode[0])
-        print "Focus is ", focus[filt]
+    for f,filt in enumerate(params.filters):        
         # column to save focus
         col= Column(np.ones(len(catalog))*focus[filt], name='FOCUS',
                     dtype='int', description = 'Focus of image')

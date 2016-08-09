@@ -20,7 +20,7 @@ The magnitude of diffrence in ellipticities of stars and its corresponing tiny
 tim image. 
 
 Output:
-File with focus when varying nuumber of stars. 
+File with focus while varying nuumber of stars. 
  """
 import subprocess
 import galsim
@@ -29,6 +29,7 @@ import functions as fn
 import matplotlib.pyplot as plt
 import get_pstamps as gps
 from astropy.table import Table, Column
+from scipy import stats
 
 class Main_param:
     """Class containg parameters to pass to run analysis on each segment file."""
@@ -177,7 +178,7 @@ def get_psf(args):
     bad_stars = get_bad_stars(args)
     params = Main_param(args, bad_stars[args.seg_id])
     # Computes focus for diffrent number of strs
-    get_focus_num_stars(params)
+    #get_focus_num_stars(params)
     out_dir = params.out_path+ '/' + params.seg_id+ '/'
     focus={}
     for f,filt in enumerate(params.filters):

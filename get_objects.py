@@ -122,7 +122,6 @@ def run_segment(params):
         all objects
 
         """
-    #import ipdb; ipdb.set_trace() 
     cat = GalaxyCatalog(params)
     cat.generate_catalog()    
 
