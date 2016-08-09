@@ -15,16 +15,16 @@ def main(args):
             cat_name = args.main_path + seg + '/' + filt + '_clean.cat'
             cat = Table.read(cat_name, format= 'ascii.basic')
             q1, = np.where(cat['IN_BOUNDARY'] == 1)
-            x = cat['ALPHA_SKY'][q1]*np.cos(np.radians(cat['DELTA_SKY'][q1]))
-            y = cat['DELTA_SKY'][q1]
+            x = cat['ALPHA_J2000'][q1]*np.cos(np.radians(cat['DELTA_J2000'][q1]))
+            y = cat['DELTA_J2000'][q1]
             tree=spatial.KDTree(zip(x, y))
             check_segs.remove(seg)
             for check_seg in check_segs:
                 ch_cat_name = args.main_path + check_seg + '/' + filt + '_clean.cat'
                 ch_cat = Table.read(ch_cat_name, format= 'ascii.basic')
                 q2, = np.where(ch_cat['IN_BOUNDARY'] == 1)
-                x = ch_cat['ALPHA_SKY'][q2]*np.cos(np.radians(ch_cat['DELTA_SKY'][q2]))
-                y = ch_cat['DELTA_SKY'][q2]
+                x = ch_cat['ALPHA_J2000'][q2]*np.cos(np.radians(ch_cat['DELTA_J2000'][q2]))
+                y = ch_cat['DELTA_J2000'][q2]
                 pts = zip(x, y)
                 s = tree.query(pts, distance_upper_bound=args.tolerance)
                 ch_q, = np.where(s[0]!= np.inf)
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     from argparse import ArgumentParser
     parser = ArgumentParser()
     parser.add_argument('--filter_names', default= ['f606w','f814w'],
-                        help="names of filters [Default: ['f814w','f606w']]")
+                        help="names of filters [Default: ['f606w','f814w']]")
     parser.add_argument('--main_path',
                         default = '/nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_full/',
                         help="Path to where you want the images are stored \

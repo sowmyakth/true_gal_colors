@@ -141,6 +141,9 @@ class GalaxyCatalog:
     "FLAGS",
     "MU_MAX",
     "MAG_AUTO",
+    "MAGERR_AUTO",
+    "MAG_BEST",
+    "MAGERR_BEST",
     "CLASS_STAR",
     "FLUX_RADIUS",
     "FLUX_AUTO",
@@ -524,7 +527,7 @@ class GalaxyCatalog:
         #Expand bright regions by 10 pixels
         q, = np.where(cat['IS_BRIGHT']==1)
         for i in q:
-            new_seg = fn.seg_expand(new_seg, buff=10, val=int(i)+1, set_to=int(i)+1)
+            new_seg = fn.seg_expand(new_seg, buff=15, val=int(i)+1, set_to=int(i)+1)
             # +1 to account for renumbering
         q, = np.where(cat['IS_BRIGHT']==0)
         s = ft.shape 
@@ -607,10 +610,10 @@ if __name__ == '__main__':
                         help="File name of measurement image with 'seg_id' & \
                         'filter' in place of image segment id and filter \
                         [Default:'EGS_10134_seg_id_acs_wfc_f606w_30mas_unrot_drz.fits']")
-    parser.add_argument('--wht_name', default='EGS_10134_seg_id_acs_wfc_filter_30mas_unrot_wht.fits',
+    parser.add_argument('--wht_name', default='EGS_10134_seg_id_acs_wfc_filter_30mas_unrot_rms.fits',
                         help="Name of weight map of measurment image with 'seg_id' \
                         and 'filter' in place of image segment id and filter  \
-                        [Default:'EGS_10134_seg_id_acs_wfc_filter_30mas_unrot_wht.fits']")  
+                        [Default:'EGS_10134_seg_id_acs_wfc_filter_30mas_unrot_rms.fits']")  
     parser.add_argument('--det_im_file',
                         default='added/EGS_10134_seg_id_acs_wfc_30mas_unrot_added_drz.fits',
                         help="File name of image to run detetction on with '\
@@ -627,9 +630,9 @@ if __name__ == '__main__':
     parser.add_argument('--det_wht_type', default='MAP_RMS',
                         help="SExtractor Weight file type for detetction image. \
                          Default='MAP_RMS'")
-    parser.add_argument('--buffer', default=10,
+    parser.add_argument('--buffer', default=15,
                         help="Number of pixels used as buffer around bright \
-                        objects in Hot-cold detection method.[Default:10(pixels)]")
+                        objects in Hot-cold detection method.[Default:15(pixels)]")
     parser.add_argument('--filter_spike_params', 
                         default= [(0.0350087,64.0863,40.0,2.614),
                                   (0.0367020,77.7674,40.0,2.180)],

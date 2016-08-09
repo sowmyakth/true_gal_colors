@@ -14,10 +14,6 @@ def run_clean_seg(args):
     path = '/nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_full/'
     obj_file =  path + seg_id + '/objects_with_p_stamps.txt'
     obj_list = np.loadtxt(obj_file, dtype=int)   
-    #Re running on images that failed
-    all_seg_ids, num = np.loadtxt('run_again.txt', delimiter=" ",dtype='S8').T
-    q, = np.where(seg_id==all_seg_ids)
-    obj_list = num[q]
     for num in  obj_list:
         outfile = 'outfile/out_3_{0}_{1}.txt'.format(seg_id, num)
         com = 'python clean_pstamp.py'# --main_path='+ path

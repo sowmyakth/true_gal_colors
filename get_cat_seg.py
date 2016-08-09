@@ -44,6 +44,7 @@ def get_cat_seg(args):
     z_cat = Table.read(z_cat_file_name, format="fits")
     tolerance = 1/3600.
 
+    #### set column names as based on the redshift and photometric catalog 
     c_x = temp['RA']*np.cos(np.radians(temp['DEC']))
     c_y = temp['DEC']
     p_ra = 'ACSDEC_'+f_str
@@ -94,8 +95,8 @@ if __name__ == '__main__':
     import numpy as np
     from argparse import ArgumentParser
     parser = ArgumentParser()
-    parser.add_argument('--seg_id', default= ['0a'],
-                        help="id of segment to run [Default: ['0a']]")
+    parser.add_argument('--seg_id', default= '0a',
+                        help="id of segment to run [Default: '0a']")
     parser.add_argument('--filter', default= 'f814w',
                         help="filter of segment to run [Default: 'f814w']")
     parser.add_argument('--file_filter_name', default ='I' ,
@@ -108,7 +109,7 @@ if __name__ == '__main__':
                         deuce/AEGIS/aegis_additional/egsacs_phot_nodup.fits',
                         help="file with all seg id names" )
     parser.add_argument('--z_cat_file_name', default ='/nfs/slac/g/ki/ki19/\
-                        deuce/AEGIS/aegis_additional/zcat.deep2.dr4.fits',
+                        deuce/AEGIS/aegis_additional/zcat.deep2.dr4.uniq.fits',
                         help="file with all seg id names")
     args = parser.parse_args()
     get_cat_seg(args)

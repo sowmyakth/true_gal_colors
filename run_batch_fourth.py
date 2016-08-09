@@ -9,6 +9,7 @@ def main(args):
     for fl in glob.glob('outfile/out_4_*'):
         os.remove(fl)
     all_seg = np.loadtxt(args.seg_file_name, delimiter=" ",dtype='S2')
+    all_seg=['01']
     for f, filt in enumerate(args.filter_names):
         for seg_id in all_seg:
             print 'SEG ID: ', seg_id, ' filter: ', filt 
