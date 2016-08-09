@@ -28,12 +28,22 @@ def get_cat_seg(args):
     temp.add_column(col)
     col= Column(np.zeros(len(temp)),name='peak_image_pixel_count',dtype='float')
     temp.add_column(col)
-    col= Column(np.ones(len(temp))*-1,name='zphot',dtype='float')
+    # Columns to add values from photometric and redshift catalog
+    col= Column(np.ones(len(temp))*-1,name='zphot',dtype='float',
+                description = 'Redshift measured from other catlog')
+    temp.add_column(col)
+    col= Column(np.ones(len(temp))*-1,name='zphot_err',dtype='float',
+                description = 'Error on redshift measured from other catlog')
     temp.add_column(col)
     col= Column(np.ones(len(temp))*99,name='ACS_' + f_str + 'BEST',dtype='float',
                description = 'Magnitude measured by ACS catalog')
+    temp.add_column(col)
+    col= Column(np.ones(len(temp))*99,name='ACS_' + f_str + 'BESTER',dtype='float',
+               description = 'Magnitude error measured by ACS catalog')
+    temp.add_column(col)
     col= Column(np.ones(len(temp))*-1,name='ACSTILE',dtype='int',
                description = 'tile no of object in ACS catlog')
+    temp.add_column(col)
     col= Column(np.ones(len(temp))*-1,name='ACSID',dtype='int',
                description = 'ID of object in ACS catlog')
     temp.add_column(col)
@@ -69,11 +79,13 @@ def get_cat_seg(args):
     c_z = ch_q
     z_c = s[1][ch_q]
     temp['ACS_' + f_str + 'BEST'][c_p] = phot_cat['ACS_' + f_str + 'BEST'][p_c]
+    temp['ACS_' + f_str + 'BESTER'][c_p] = phot_cat['ACS_' + f_str + 'BESTER'][p_c]
     temp['ACSID'][c_p] = phot_cat['ACSID'][p_c]
     temp['ACSTILE'][c_p] = phot_cat['ACSTILE'][p_c]
     temp['zphot'][c_z] = z_cat['ZBEST'][z_c]
+    temp['zphot_err'][c_z] = z_cat['ZERR'][z_c]
 
-            
+     # Add columns for slection file       
     for idx,obj in enumerate(objs):
         path = args.main_path + seg + '/postage_stamps/stamp_stats/'
         stats_file =  path + str(obj) + '_' + filt + '.txt'

@@ -178,9 +178,15 @@ def get_psf(args):
     params = Main_param(args, bad_stars[args.seg_id])
     # Computes focus for diffrent number of strs
     get_focus_num_stars(params)
+    out_dir = params.out_path+ '/' + params.seg_id+ '/'
+    focus={}
+    for f,filt in enumerate(params.filters):
+        a = np.loadtxt(out_dir+filt+'_focus_with_num_stars.txt')
+        focus[filt] = int(stats.mode(a.T[1]).mode[0])
+        print "Focus for {0} is {1} ".format(filt, focus[filt])
     # save postage stamps
     print "Getting postage stamps"
-    gps.run(params)
+    gps.run(params, focus)
             
 
 if __name__ == '__main__':
@@ -192,7 +198,7 @@ if __name__ == '__main__':
     parser.add_argument('--seg_id', default='1a',
                         help="Segment id of image to run [Default:1a]")
     parser.add_argument('--filter_names', default= ['f606w','f814w'],
-                        help="names of filters [Default: ['f814w','f606w']]")
+                        help="names of filters [Default: ['f606w','f814w']]")
     parser.add_argument('--bad_stars_file', default= 'bad_stars.txt',
                         help="File containing index of strs that should not be  \
                         used in PSF estimation [Default:'bad_stars.txt'] ")
@@ -216,8 +222,6 @@ if __name__ == '__main__':
     parser.add_argument('--focus',
                         default= [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5],
                         help="List containg focus positions that have TT_fields")
-
-    parser.add_argument('--run_all', help='Enter yes to run all files')
     args = parser.parse_args()
     get_psf(args)
 
