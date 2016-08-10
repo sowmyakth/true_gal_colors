@@ -170,8 +170,6 @@ def get_main_catalog(args, index_table):
             temp.add_column(col)
             temp.rename_column('MAG_AUTO', 'MAG')
             temp.rename_column('HDU', 'GAL_HDU')
-            temp.rename_column('ALPHA_SKY', 'RA')
-            temp.rename_column('DELTA_SKY', 'DEC')
             p_scales = np.ones(len(q))*0.03
             weights = np.ones(len(q))
             im = [args.gal_im_name.replace('filter', args.file_filter_name[f])]*len(q)
