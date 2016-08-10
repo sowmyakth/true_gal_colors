@@ -13,7 +13,11 @@ psf measuremnt, then their seg id and number must be written in bad_stars.txt
 PSF estimation:
 The optimal focus and corresponding tt_strfeild in picked in get_pstamps. Here
 we compute the focus for a given image while varying number of strs used to 
-measure focus. The focus is given by the minimum of the cost function. 
+measure focus. The focus is given by the minimum of the cost function. The focus 
+is is computed for different number of stars in the feild. The stars used for 
+measuring focus are sorted in decreasing SNR. The mode of focus values for different
+number of stars used in focus measurement is set as the focus value for the given
+segmenty.   
 
 Cost Function:
 The magnitude of diffrence in ellipticities of stars and its corresponing tiny 
@@ -196,8 +200,8 @@ if __name__ == '__main__':
     import numpy as np
     from argparse import ArgumentParser
     parser = ArgumentParser()
-    parser.add_argument('--seg_id', default='1a',
-                        help="Segment id of image to run [Default:1a]")
+    parser.add_argument('--seg_id', default='1g',
+                        help="Segment id of image to run [Default:1g]")
     parser.add_argument('--filter_names', default= ['f606w','f814w'],
                         help="names of filters [Default: ['f606w','f814w']]")
     parser.add_argument('--bad_stars_file', default= 'bad_stars.txt',

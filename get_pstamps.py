@@ -137,7 +137,11 @@ def run(params, focus):
             seg_image = fn.get_subImage_pyfits(x0,y0, stamp_size, seg_name,
                                                None, None, save_img=False)
             for header_param in header_params:
-                gal_header[header_param] = catalogs[f][header_param][i]
+                try:
+                    gal_header[header_param] = catalogs[f][header_param][i]
+                except:
+                    gal_header[header_param] = 9999.99
+                    
             psf_header['X'] = tt_pos[0]
             psf_header['Y'] = tt_pos[1]
             psf_header['width'] = psf_stamp_size[0]

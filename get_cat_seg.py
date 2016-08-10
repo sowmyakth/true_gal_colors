@@ -1,6 +1,5 @@
 import subprocess
 import numpy as np
-import glob
 import os
 from astropy.table import Table, Column
 from scipy import spatial
@@ -10,10 +9,14 @@ def get_cat_seg(args):
     filt = args.filter
     f_str = args.file_filter_name
     cat_name = args.main_path + seg + '/' + filt + '_full.cat'
+    new_cat_name = args.main_path + seg + '/' + filt + '_with_pstamp.fits'
+    if os.path.isfile(new_cat_name) is True:
+                subprocess.call(["rm", new_cat_name])    
     cat = Table.read(cat_name, format= 'ascii.basic')
     obj_list= args.main_path + seg + '/objects_with_p_stamps.txt' 
     objs = np.loadtxt(obj_list, dtype="int")
     temp = cat[objs]
+    print " Adding required columns"
     col = Column(np.zeros(len(temp)),name='NOISE_MEAN',dtype='float', description = 'Mean of background noise' )
     temp.add_column(col)
     col = Column(np.zeros(len(temp)),name='NOISE_VARIANCE',dtype='float', description = 'Variance of background noise' )
@@ -28,6 +31,7 @@ def get_cat_seg(args):
     temp.add_column(col)
     col= Column(np.zeros(len(temp)),name='peak_image_pixel_count',dtype='float')
     temp.add_column(col)
+    print " Adding columns for other catalog information"
     # Columns to add values from photometric and redshift catalog
     col= Column(np.ones(len(temp))*-1,name='zphot',dtype='float',
                 description = 'Redshift measured from other catlog')
@@ -50,8 +54,10 @@ def get_cat_seg(args):
     temp.rename_column('ALPHA_J2000', 'RA')
     temp.rename_column('DELTA_J2000', 'DEC')
 
-    phot_cat = Table.read(phot_cat_file_name, format="fits")
-    z_cat = Table.read(z_cat_file_name, format="fits")
+    phot_cat = Table.read(args.phot_cat_file_name, format="fits")
+    #Only values with ZQUALITY >3 can be trusted
+    z_cat_temp = Table.read(args.z_cat_file_name, format="fits")    
+    z_cat = z_cat_temp[z_cat_temp['ZQUALITY']>3]
     tolerance = 1/3600.
 
     #### set column names as based on the redshift and photometric catalog 
@@ -98,9 +104,8 @@ def get_cat_seg(args):
         temp['min_mask_dist_pixels'][idx] = min_dist
         temp['average_mask_adjacent_pixel_count'][idx] = avg_flux
         temp['peak_image_pixel_count'][idx] = peak_val
-    new_cat_name = args.main_path + seg + '/' + filt + '_with_pstamp.cat'
     print "Catalog with pstamps saved at ", new_cat_name
-    temp.write(new_cat_name, format='ascii.basic')  
+    temp.write(new_cat_name, format='fits')  
 
 if __name__ == '__main__':
     import subprocess
@@ -115,13 +120,10 @@ if __name__ == '__main__':
                         help="Name of filter to use  [Default ='I']")
     parser.add_argument('--main_path',
                         default = '/nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_full/')
-    parser.add_argument('--seg_file_name', default ='/nfs/slac/g/ki/ki19/deuce/\
-                        AEGIS/unzip/seg_ids.txt', help="file with all seg id names" )
-    parser.add_argument('--phot_cat_file_name', default ='/nfs/slac/g/ki/ki19/\
-                        deuce/AEGIS/aegis_additional/egsacs_phot_nodup.fits',
+    parser.add_argument('--seg_file_name', default ='/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/seg_ids.txt', help="file with all seg id names" )
+    parser.add_argument('--phot_cat_file_name', default ='/nfs/slac/g/ki/ki19/deuce/AEGIS/aegis_additional/egsacs_phot_nodup.fits',
                         help="file with all seg id names" )
-    parser.add_argument('--z_cat_file_name', default ='/nfs/slac/g/ki/ki19/\
-                        deuce/AEGIS/aegis_additional/zcat.deep2.dr4.uniq.fits',
+    parser.add_argument('--z_cat_file_name', default ='/nfs/slac/g/ki/ki19/deuce/AEGIS/aegis_additional/zcat.deep2.dr4.uniq.fits',
                         help="file with all seg id names")
     args = parser.parse_args()
     get_cat_seg(args)

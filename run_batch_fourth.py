@@ -14,7 +14,7 @@ def main(args):
             print 'SEG ID: ', seg_id, ' filter: ', filt 
             outfile = 'outfile/out_4_{0}.txt'.format(seg_id)
             com = 'python get_cat_seg.py --seg_id='+ seg_id
-            final_args =['bsub', '-W' , '0:55','-o', outfile, com]
+            final_args =['bsub', '-W' , '0:35','-o', outfile, com]
             final_args.append("--filter="+ filt )    
             subprocess.call(final_args)
               

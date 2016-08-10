@@ -1,20 +1,46 @@
+"""Program Number: ???
+
+Write complete catalog into files that can be opened with galsim.Realgalaxy()
+and galsim.COSMOSCatalog(). For historic reasons, the input files for the 
+galsim modules are:
+1) Main catalog file
+2) Selection file
+3) Fits file
+4) Files with galaxy images as hdu (1000 objects per file)
+5) Files with psf images as hdu (1000 objects per file)
+
+Seperate files are made for each band. 
+
+Requirements: 
+Postage stamp images of galaxy and psf in multiple bands, file
+with list of names of differnt tiles, catalog containing information on each galaxy
+(in multiple bands). Each tile must have list with identification number of 
+galaxeies with postage stamps.
+
+Assign Number:
+Assign individual identification number ('IDENT') to each object in catalog. We 
+also want the catalog objects to be randomly shuffled. A new column ('ORDER')
+gives the position of the objectt in the final shuffled catalog. Segment (tile) ID in which that object was detected, number in that 
+segment, individual identification number, position in final catalog, number
+of the fits file where the postage stamps are saved, hdu number in that fits 
+file of the image are saved in index table.
+
+Save Images:
+
+
+
+
+Output:
+Files with galaxy images (in multiple bands), files with galaxy images (in 
+multiple bands), main file , selection file and fits file.
+
+"""
 from astropy.io import fits
 from astropy.table import Table,Column, vstack, hstack, join
 import os,glob
 
 
-def get_in_galsim(args):
-    if os.path.isdir(args.main_path + args.out_dir) is False:
-            subprocess.call(["mkdir", args.main_path + args.out_dir])
-    else:
-    	for fl in glob.glob(args.main_path + args.out_dir+'*'):
-            os.remove(fl)
-    index_table = assign_num(args)
-    for f, filt in enumerate(args.filter_names):
-        get_images(args, index_table, filt, args.file_filter_name[f])
-    get_main_catalog(args, index_table)
-    get_selection_catalog(args, index_table)
-    get_fits_catalog(args, index_table)
+
     
 def main_table():
     names = ('IDENT', 'RA', 'DEC', 'MAG', 'BAND', 'WEIGHT', 'GAL_FILENAME')
@@ -61,7 +87,7 @@ def get_main_catalog(args, index_table):
         complete_table=Table()
         for seg_id in all_seg_ids:
             file_name = args.main_path + seg_id + '/' + filt + '_with_pstamp.cat'
-            seg_cat = Table.read(file_name, format='ascii.basic')
+            seg_cat = Table.read(file_name, format='fits')
             q, = np.where(index_table['SEG_ID'] == seg_id)
             indx_seg = index_table[q]
             temp = join(seg_cat, indx_seg, keys='NUMBER')
@@ -105,7 +131,7 @@ def get_selection_catalog(args, index_table):
     	final_table = selection_table()
         for seg_id in all_seg_ids:
             file_name = args.main_path + seg_id + '/' + filt + '_with_pstamp.cat'
-            seg_cat = Table.read(file_name, format='ascii.basic')
+            seg_cat = Table.read(file_name, format='fits')
             q, = np.where(index_table['SEG_ID'] == seg_id)
             indx_seg = index_table[q]
             temp = join(seg_cat, indx_seg, keys='NUMBER')
@@ -126,7 +152,7 @@ def get_fits_catalog(args, index_table):
     	final_table = fits_table()
         for seg_id in all_seg_ids:
             file_name = args.main_path + seg_id + '/' + filt + '_with_pstamp.cat'
-            seg_cat = Table.read(file_name, format='ascii.basic')
+            seg_cat = Table.read(file_name, format='fits')
             q, = np.where(index_table['SEG_ID'] == seg_id)
             indx_seg = index_table[q]
             temp = join(seg_cat, indx_seg, keys='NUMBER')
@@ -155,7 +181,6 @@ def get_fits_catalog(args, index_table):
         path = args.main_path + args.out_dir 
         file_name = args.fits_file_name.replace('filter', args.file_filter_name[f])
         print "Savings fits file at ", path + file_name
-        #import ipdb;ipdb.set_trace()
         final_table[index_table['ORDER']].write(path + file_name, format='fits')
 
 
@@ -192,9 +217,8 @@ def get_images(args, index_table,
         im_hdul.writeto(im_name, clobber=True)
         psf_hdul.writeto(psf_name, clobber=True)
 
-
 def assign_num(args):
-    """Assign individual identification number to each object"""
+    """Assigns individual identification number to each object"""
     seed =122
     np.random.seed(seed)
     print "Assigning number"
@@ -202,7 +226,8 @@ def assign_num(args):
     dtype = ('string', 'int', 'int') 
     index_table = Table(names=names, dtype = dtype)
     ident = 0
-    #objects detected same in all filters. So read catalog only of first filter
+    #objects detected are same in all filters. So getting objects in first filter
+    #is sufficient
     filt = args.filter_names[0]
     all_seg_ids = np.loadtxt(args.seg_list_file, delimiter=" ",dtype='S2')
     for seg_id in all_seg_ids:
@@ -223,6 +248,19 @@ def assign_num(args):
     temp = Table([order_idents,file_nums,hdus], names=names, dtype=dtype)
     index_table = hstack([index_table,temp])
     return index_table
+
+def get_in_galsim(args):
+    if os.path.isdir(args.main_path + args.out_dir) is False:
+            subprocess.call(["mkdir", args.main_path + args.out_dir])
+    else:
+        for fl in glob.glob(args.main_path + args.out_dir+'*'):
+            os.remove(fl)
+    index_table = assign_num(args)
+    for f, filt in enumerate(args.filter_names):
+        get_images(args, index_table, filt, args.file_filter_name[f])
+    get_main_catalog(args, index_table)
+    get_selection_catalog(args, index_table)
+    get_fits_catalog(args, index_table)
 
 
 

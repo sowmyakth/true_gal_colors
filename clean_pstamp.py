@@ -1,4 +1,3 @@
-
 """Program Number: 4
 Identifies multiple objects in the postage stamp of a galaxy, and replaces 
 the other object with noise
