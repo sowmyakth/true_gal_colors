@@ -1,3 +1,15 @@
+"""Program Number: 5
+Reduces the full catalog to objects that have postage stamps for each segment.
+Then adds a few columns that are required for the main catalog. If a redshift 
+and photometric catalog are provided, then objects from main cotaog are matched
+to the photometric and redshift catlog, and redhsift and magnitude values are 
+saved. 
+
+Note: If no photomteric or redshift catalog, set the input argument for the 
+file names to be 'None'. The column names of these two catalogs in the code
+need to be chnaged to their names in the input.
+"""
+
 import subprocess
 import numpy as np
 import os
@@ -5,6 +17,9 @@ from astropy.table import Table, Column
 from scipy import spatial
 
 def get_cat_seg(args):
+    """For a given segment and filter, identifies the objects for which postage
+    stamps are drawn and write to a new file.
+    """
     seg = args.seg_id
     filt = args.filter
     f_str = args.file_filter_name
@@ -46,7 +61,7 @@ def get_cat_seg(args):
                description = 'Magnitude error measured by ACS catalog')
     temp.add_column(col)
     col= Column(np.ones(len(temp))*-1,name='ACSTILE',dtype='int',
-               description = 'tile no of object in ACS catlog')
+               description = 'Tile number of object in ACS catlog')
     temp.add_column(col)
     col= Column(np.ones(len(temp))*-1,name='ACSID',dtype='int',
                description = 'ID of object in ACS catlog')
@@ -54,43 +69,44 @@ def get_cat_seg(args):
     temp.rename_column('ALPHA_J2000', 'RA')
     temp.rename_column('DELTA_J2000', 'DEC')
 
-    phot_cat = Table.read(args.phot_cat_file_name, format="fits")
-    #Only values with ZQUALITY >3 can be trusted
-    z_cat_temp = Table.read(args.z_cat_file_name, format="fits")    
-    z_cat = z_cat_temp[z_cat_temp['ZQUALITY']>3]
-    tolerance = 1/3600.
-
-    #### set column names as based on the redshift and photometric catalog 
     c_x = temp['RA']*np.cos(np.radians(temp['DEC']))
     c_y = temp['DEC']
-    p_ra = 'ACSDEC_'+f_str
-    p_dec = 'ACSDEC_'+f_str
-    p_x = phot_cat[p_ra]*np.cos(np.radians(phot_cat[p_dec]))
-    p_y = phot_cat[p_dec]
-    p_tree=spatial.KDTree(zip(p_x, p_y)) 
-    z_x = z_cat['RA']*np.cos(np.radians(z_cat['DEC']))
-    z_y = z_cat['DEC']
-    z_tree=spatial.KDTree(zip(z_x, z_y))
-
-    # Objects in my catalog that exist in photometric catalog
     c_pts = zip(c_x, c_y)
-    s = p_tree.query(c_pts, distance_upper_bound=tolerance)
-    ch_q, = np.where(s[0]!= np.inf)
-    c_p = ch_q
-    p_c = s[1][ch_q]
-
-    # Objects in catalog that exist in redshift catalog
-    s = z_tree.query(c_pts, distance_upper_bound=tolerance)
-    ch_q, = np.where(s[0]!= np.inf)
-    c_z = ch_q
-    z_c = s[1][ch_q]
-    temp['ACS_' + f_str + 'BEST'][c_p] = phot_cat['ACS_' + f_str + 'BEST'][p_c]
-    temp['ACS_' + f_str + 'BESTER'][c_p] = phot_cat['ACS_' + f_str + 'BESTER'][p_c]
-    temp['ACSID'][c_p] = phot_cat['ACSID'][p_c]
-    temp['ACSTILE'][c_p] = phot_cat['ACSTILE'][p_c]
-    temp['zphot'][c_z] = z_cat['ZBEST'][z_c]
-    temp['zphot_err'][c_z] = z_cat['ZERR'][z_c]
-
+    tolerance = 1/3600.
+    #If a photometric catalog is given
+    if args.phot_cat_file_name is not 'None':
+        phot_cat = Table.read(args.phot_cat_file_name, format="fits")
+        #### set column names as based on the photometric catalog  
+        p_ra = 'ACSDEC_'+f_str
+        p_dec = 'ACSDEC_'+f_str
+        p_x = phot_cat[p_ra]*np.cos(np.radians(phot_cat[p_dec]))
+        p_y = phot_cat[p_dec]
+        p_tree=spatial.KDTree(zip(p_x, p_y)) 
+        # Objects in catalog that exist in photometric catalog
+        s = p_tree.query(c_pts, distance_upper_bound=tolerance)
+        ch_q, = np.where(s[0]!= np.inf)
+        c_p = ch_q
+        p_c = s[1][ch_q]
+        temp['ACS_' + f_str + 'BEST'][c_p] = phot_cat['ACS_' + f_str + 'BEST'][p_c]
+        temp['ACS_' + f_str + 'BESTER'][c_p] = phot_cat['ACS_' + f_str + 'BESTER'][p_c]
+        temp['ACSID'][c_p] = phot_cat['ACSID'][p_c]
+        temp['ACSTILE'][c_p] = phot_cat['ACSTILE'][p_c]
+    #If a reshift catalog is given
+    if args.phot_cat_file_name is not 'None':
+        #Only values with ZQUALITY >3 can be trusted
+        z_cat_temp = Table.read(args.z_cat_file_name, format="fits")
+        #### set column names as based on the redshift catalog     
+        z_cat = z_cat_temp[z_cat_temp['ZQUALITY']>3]
+        z_x = z_cat['RA']*np.cos(np.radians(z_cat['DEC']))
+        z_y = z_cat['DEC']
+        z_tree=spatial.KDTree(zip(z_x, z_y))
+        #Objects in catalog that exist in redshift catalog
+        s = z_tree.query(c_pts, distance_upper_bound=tolerance)
+        ch_q, = np.where(s[0]!= np.inf)
+        c_z = ch_q
+        z_c = s[1][ch_q]
+        temp['zphot'][c_z] = z_cat['ZBEST'][z_c]
+        temp['zphot_err'][c_z] = z_cat['ZERR'][z_c]
      # Add columns for slection file       
     for idx,obj in enumerate(objs):
         path = args.main_path + seg + '/postage_stamps/stamp_stats/'

@@ -3,8 +3,6 @@ import glob
 import os
 import numpy as np
 
-
-
 def main(args):
     for fl in glob.glob('outfile/out_4_*'):
         os.remove(fl)
