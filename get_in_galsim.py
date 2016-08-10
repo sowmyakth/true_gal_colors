@@ -86,7 +86,7 @@ def get_main_catalog(args, index_table):
     	final_table = main_table()
         complete_table=Table()
         for seg_id in all_seg_ids:
-            file_name = args.main_path + seg_id + '/' + filt + '_with_pstamp.cat'
+            file_name = args.main_path + seg_id + '/' + filt + '_with_pstamp.fits'
             seg_cat = Table.read(file_name, format='fits')
             q, = np.where(index_table['SEG_ID'] == seg_id)
             indx_seg = index_table[q]
@@ -114,12 +114,14 @@ def get_main_catalog(args, index_table):
             complete_table = vstack([complete_table,temp])
         path = args.main_path + args.out_dir 
         cat_name = args.cat_name.replace('filter', args.file_filter_name[f])
-        final_table[index_table['ORDER']].write(path + cat_name, format='fits')
+        final_table[index_table['ORDER']].write(path + cat_name, format='fits',
+                                                overwrite=True)
         print "Savings fits file at ", path + cat_name
         cat_name = 'complete_' + args.cat_name.replace('filter', args.file_filter_name[f])
-        complete_table[index_table['ORDER']].write(args.main_path + cat_name, format='fits')
-        cat_name = 'index_table_' + args.cat_name.replace('filter', args.file_filter_name[f])
-        index_table[index_table['ORDER']].write(args.main_path + cat_name, format='fits')
+        complete_table[index_table['ORDER']].write(args.main_path + cat_name, format='fits',
+                                                   overwrite=True)
+        index_table[index_table['ORDER']].write(cat_name, format='fits',overwrite=True)
+        
         
 
 def get_selection_catalog(args, index_table):
@@ -130,7 +132,7 @@ def get_selection_catalog(args, index_table):
     for f, filt in enumerate(args.filter_names):
     	final_table = selection_table()
         for seg_id in all_seg_ids:
-            file_name = args.main_path + seg_id + '/' + filt + '_with_pstamp.cat'
+            file_name = args.main_path + seg_id + '/' + filt + '_with_pstamp.fits'
             seg_cat = Table.read(file_name, format='fits')
             q, = np.where(index_table['SEG_ID'] == seg_id)
             indx_seg = index_table[q]
@@ -140,8 +142,10 @@ def get_selection_catalog(args, index_table):
             final_table = vstack([final_table,temp], join_type='inner')
         path = args.main_path + args.out_dir 
         file_name = args.selec_file_name.replace('filter', args.file_filter_name[f])
-        final_table[index_table['ORDER']].write(path + file_name, format='fits')
+        final_table[index_table['ORDER']].write(path + file_name, format='fits',
+                                                overwrite=True)
         print "Savings fits file at ", path + file_name
+
 
 def get_fits_catalog(args, index_table):
     """Make catlog containing info about all galaxies in final catalog.
@@ -151,7 +155,7 @@ def get_fits_catalog(args, index_table):
     for f, filt in enumerate(args.filter_names):
     	final_table = fits_table()
         for seg_id in all_seg_ids:
-            file_name = args.main_path + seg_id + '/' + filt + '_with_pstamp.cat'
+            file_name = args.main_path + seg_id + '/' + filt + '_with_pstamp.fits'
             seg_cat = Table.read(file_name, format='fits')
             q, = np.where(index_table['SEG_ID'] == seg_id)
             indx_seg = index_table[q]
@@ -181,7 +185,8 @@ def get_fits_catalog(args, index_table):
         path = args.main_path + args.out_dir 
         file_name = args.fits_file_name.replace('filter', args.file_filter_name[f])
         print "Savings fits file at ", path + file_name
-        final_table[index_table['ORDER']].write(path + file_name, format='fits')
+        final_table[index_table['ORDER']].write(path + file_name, format='fits',
+                                                overwrite=True)
 
 
 def get_images(args, index_table,
@@ -231,22 +236,25 @@ def assign_num(args):
     filt = args.filter_names[0]
     all_seg_ids = np.loadtxt(args.seg_list_file, delimiter=" ",dtype='S2')
     for seg_id in all_seg_ids:
-        file_name = args.main_path + seg_id + '/' + filt + '_with_pstamp.cat'
-        catalog = Table.read(file_name, format='ascii.basic')
+        file_name = args.main_path + seg_id + '/' + filt + '_with_pstamp.fits'
+        catalog = Table.read(file_name, format='fits')
         idents = range(ident,ident+len(catalog))
         seg_ids = [seg_id]*len(catalog)
         numbers = catalog['NUMBER']       
         temp = Table([seg_ids, numbers,idents],names=names, dtype = dtype)
         index_table = vstack([index_table,temp])
         ident+=len(catalog)
+    shuffle_idents = range(len(index_table))
+    np.random.shuffle(shuffle_idents)
+    index_table= index_table[shuffle_idents]
     order_idents = range(len(index_table))
-    np.random.shuffle(order_idents)
     file_nums = np.array(order_idents)/1000 + 1
     hdus= np.zeros(len(order_idents))
     names = ('ORDER', 'FILE_NUM', 'HDU')
     dtype = ('int' ,'int', 'int')
     temp = Table([order_idents,file_nums,hdus], names=names, dtype=dtype)
     index_table = hstack([index_table,temp])
+    cat_name = args.main_path + 'index_table_' + args.cat_name.replace('filter', '')
     return index_table
 
 def get_in_galsim(args):
