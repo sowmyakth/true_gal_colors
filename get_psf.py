@@ -6,12 +6,12 @@ in get_pstamps.py)
 Requirements: A catalog with sextractor output for the given tile(segment), List
 of stars in the segemnt to be used for psf measuremnt, image of region, tt_starfeilds
 which contain psf drawn at difernt focus distance, at various points on the chip
-(size of tt_strfeild, must be same as input image),segmentation map of the
+(size of tt_starfeild, must be same as input image),segmentation map of the
 region. If upon visual inspection, some stars were found to be unsuitable for
 psf measuremnt, then their seg id and number must be written in bad_stars.txt
 
 PSF estimation:
-The optimal focus and corresponding tt_strfeild in picked in get_pstamps. Here
+The optimal focus and corresponding tt_starfeild in picked in get_pstamps. Here
 we compute the focus for a given image while varying number of strs used to 
 measure focus. The focus is given by the minimum of the cost function. The focus 
 is is computed for different number of stars in the feild. The stars used for 
@@ -181,8 +181,8 @@ def get_psf(args):
     """Gets list of stars, if any, to be omitted from PSF estimation"""
     bad_stars = get_bad_stars(args)
     params = Main_param(args, bad_stars[args.seg_id])
-    # Computes focus for diffrent number of strs
-    #get_focus_num_stars(params)
+    # Computes focus for diffrent number of stars
+    get_focus_num_stars(params)
     out_dir = params.out_path+ '/' + params.seg_id+ '/'
     focus={}
     for f,filt in enumerate(params.filters):

@@ -41,7 +41,7 @@ galaxy. Since no fits were performed here, fake values are entered.
 
 Output:
 Files with galaxy images (in multiple bands), files with galaxy images (in 
-multiple bands), main file , selection file and fits file.
+multiple bands), main file, selection file and fits file.
 
 """
 from astropy.io import fits

@@ -20,9 +20,6 @@ by the stdev of the background pixels of the postage stamp.
 Stamp Stats:
 Some value are saved so that the GalSim COSMOSCatalog class may use to impose
 selection criteria on the quality of the postage stamps. 
-
-
-
 """
 from astropy.table import Table
 import pyfits
