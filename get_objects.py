@@ -285,7 +285,7 @@ class GalaxyCatalog:
             snr = np.array(catalog['FLUX_AUTO'])/np.array(catalog['FLUXERR_AUTO'])
             col= Column(snr,name='SNR',description = 'Signal to Noise Ratio')
             catalog.add_column(col)
-            # modified snr
+            # Modified snr
             A = catalog['FLUXERR_AUTO']**2 - catalog['FLUX_AUTO']/self.params.gain[filt]
             new_f_err = (A/self.params.sf + catalog['FLUX_AUTO']/self.params.gain[filt])**0.5 
             col= Column(new_f_err,name='NEW_FLUXERR_AUTO',description = 'Modified FLUXERR_AUTO')
@@ -395,6 +395,37 @@ class GalaxyCatalog:
                     if max(bools) == 1:
                         catalog['IN_MANUAL_MASK'][i]=1
             return catalog
+
+    def combine_seg_map(self, filt,  out_dir):
+        """Combine bright and faint seg maps"""
+        cat_name = out_dir + '/'+ filt +'_clean.cat'
+        bright_name = out_dir + '/'+ filt +'_bright_seg_map.fits'
+        faint_name = out_dir + '/'+ filt +'_faint_seg_map.fits'
+        hdu1 = pyfits.open(bright_name)
+        hdu2 = pyfits.open(faint_name)
+        br = hdu1[0].data 
+        ft = hdu2[0].data 
+        hdu2.close()
+        hdu1.close()
+        cat = Table.read(cat_name, format='ascii.basic')        
+        new_seg = br
+        # Expand bright regions by 10 pixels
+        q, = np.where(cat['IS_BRIGHT']==1)
+        for i in q:
+            new_seg = fn.seg_expand(new_seg, buff=5, val=int(i)+1, set_to=int(i)+1)
+            # +1 to account for renumbering
+        q, = np.where(cat['IS_BRIGHT']==0)
+        s = ft.shape 
+        for i in q:
+            for j in range(s[0]):
+                pix, = np.where((ft[j,:] == cat['OLD_NUMBER'][i]) & (new_seg[j,:] == 0) )
+                new_seg[j][pix] = cat['NUMBER'][i]+1
+        new_seg_name = out_dir + '/'+ filt +'_comb_seg_map.fits'
+        print "Bright faint combined seg map created at", new_seg_name
+        pyfits.writeto(new_seg_name, new_seg, clobber=True)
+        os.remove(bright_name)
+        os.remove(faint_name)
+
 
     def cleanup_catalog(self, out_dir):
         """Removes objects on boundaries, diffraction spikes, manual mask"""
@@ -510,35 +541,6 @@ class GalaxyCatalog:
                                       dir_star, out_name, save_img=True)
                 num+=1
     
-    def combine_seg_map(self, filt,  out_dir):
-        """Combine bright and faint seg maps"""
-        cat_name = out_dir + '/'+ filt +'_clean.cat'
-        bright_name = out_dir + '/'+ filt +'_bright_seg_map.fits'
-        faint_name = out_dir + '/'+ filt +'_faint_seg_map.fits'
-        hdu1 = pyfits.open(bright_name)
-        hdu2 = pyfits.open(faint_name)
-        br = hdu1[0].data 
-        ft = hdu2[0].data 
-        hdu2.close()
-        hdu1.close()
-        cat = Table.read(cat_name, format='ascii.basic')        
-        new_seg = br
-        #Expand bright regions by 10 pixels
-        q, = np.where(cat['IS_BRIGHT']==1)
-        for i in q:
-            new_seg = fn.seg_expand(new_seg, buff=5, val=int(i)+1, set_to=int(i)+1)
-            # +1 to account for renumbering
-        q, = np.where(cat['IS_BRIGHT']==0)
-        s = ft.shape 
-        for i in q:
-            for j in range(s[0]):
-                pix, = np.where((ft[j,:] == cat['OLD_NUMBER'][i]) & (new_seg[j,:] == 0) )
-                new_seg[j][pix] = cat['NUMBER'][i]+1
-        new_seg_name = out_dir + '/'+ filt +'_comb_seg_map.fits'
-        print "Bright faint combined seg map created at", new_seg_name
-        pyfits.writeto(new_seg_name, new_seg, clobber=True)
-        os.remove(bright_name)
-        os.remove(faint_name)
   
     def generate_catalog(self):
         # create o/p folder if doesn't exist

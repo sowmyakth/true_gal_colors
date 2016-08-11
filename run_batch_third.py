@@ -12,7 +12,8 @@ def run_clean_pstamps():
     for seg_id in all_seg_ids:
         print 'SEG ID ', seg_id
         outfile = 'outfile/out_3_seg_{0}.txt'.format(seg_id)
-        com = 'python run_clean_seg.py --seg_id='+ seg_id
+        com1='/nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_full2/'
+        com = 'python run_clean_seg.py --seg_id='+ seg_id + ' --out_path='+ com1
         final_args =['bsub', '-W', '1:55', '-o', outfile, com ]
         print outfile    
         subprocess.call(final_args)
