@@ -199,9 +199,21 @@ def clean_pstamp(args):
             print "Ignore object"
             peak_val = 0
             min_dist = 0.
-            min_dist_seg = 0.        
-            avg_flux = 0
-            snr = -10
+            avg_flux = 999.99
+            snr = -10.
+            info = [0, 0, 0 , min_dist, avg_flux, peak_val, snr]
+            np.savetxt(params.path + 'stamp_stats'+'/'+ params.num + '_'+ filt + '.txt', info)
+            new_im_name = params.path + filt + '_'+ params.seg_id + '_'+ params.num +'_gal.fits'
+            pyfits.writeto(new_im_name, im_dat, im_hdr, clobber=True)
+            continue
+        # Objects seg map covers entire pstamp, no blank region
+        # manually set output values so it fails selection tests later
+        if len(bl)==0:
+            print "Ignore object"
+            peak_val = 0
+            min_dist = 0.
+            avg_flux = 999.99
+            snr = -10.
             info = [0, 0, 0 , min_dist, avg_flux, peak_val, snr]
             np.savetxt(params.path + 'stamp_stats'+'/'+ params.num + '_'+ filt + '.txt', info)
             new_im_name = params.path + filt + '_'+ params.seg_id + '_'+ params.num +'_gal.fits'
@@ -213,9 +225,9 @@ def clean_pstamp(args):
         # No other object present                
         if len(oth_segs)==0 :
             print "No other object"
-            min_dist = 0.      
+            min_dist = 999.99      
             pix_near_dist = [shape[0]/2, shape[1]/2]
-            avg_flux = get_avg_around_pix(pix_near_dist[0], pix_near_dist[1], im_dat)
+            avg_flux = 0.
             snr = get_snr(im_dat, b_std**2)
             info = [b_mean, b_std, np.sum(im_dat), min_dist, avg_flux, peak_val, snr ]
             np.savetxt(params.path + 'stamp_stats'+'/'+ params.num + '_'+ filt + '.txt', info)
