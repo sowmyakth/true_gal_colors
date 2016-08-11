@@ -18,7 +18,7 @@ from scipy import spatial
 
 def get_cat_seg(args):
     """For a given segment and filter, identifies the objects for which postage
-    stamps are drawn and write to a new file.
+    stamps are drawn and writes to a new file.
     """
     seg = args.seg_id
     filt = args.filter
@@ -112,7 +112,7 @@ def get_cat_seg(args):
         path = args.main_path + seg + '/postage_stamps/stamp_stats/'
         stats_file =  path + str(obj) + '_' + filt + '.txt'
         stats = np.loadtxt(stats_file) 
-        [b_mean, b_std, flux, min_dist, avg_flux, peak_val, snr ] = stats
+        [b_mean, b_std, flux, min_dist, avg_flux, peak_val, snr] = stats
         temp['NOISE_MEAN'][idx] = b_mean
         temp['NOISE_VARIANCE'][idx] = b_std**2
         temp['stamp_flux'][idx] = flux
