@@ -526,7 +526,7 @@ class GalaxyCatalog:
         #Expand bright regions by 10 pixels
         q, = np.where(cat['IS_BRIGHT']==1)
         for i in q:
-            new_seg = fn.seg_expand(new_seg, buff=15, val=int(i)+1, set_to=int(i)+1)
+            new_seg = fn.seg_expand(new_seg, buff=5, val=int(i)+1, set_to=int(i)+1)
             # +1 to account for renumbering
         q, = np.where(cat['IS_BRIGHT']==0)
         s = ft.shape 
@@ -629,7 +629,7 @@ if __name__ == '__main__':
     parser.add_argument('--det_wht_type', default='MAP_RMS',
                         help="SExtractor Weight file type for detetction image. \
                          Default='MAP_RMS'")
-    parser.add_argument('--buffer', default=15,
+    parser.add_argument('--buffer', default=10,
                         help="Number of pixels used as buffer around bright \
                         objects in Hot-cold detection method.[Default:15(pixels)]")
     parser.add_argument('--filter_spike_params', 
