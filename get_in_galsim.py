@@ -115,6 +115,7 @@ def get_images(args, index_table,
         psf_name = path + psf_name
         im_hdul.writeto(im_name, clobber=True)
         psf_hdul.writeto(psf_name, clobber=True)
+    return index_table
   
 def main_table():
     names = ('IDENT', 'RA', 'DEC', 'MAG', 'BAND', 'WEIGHT', 'GAL_FILENAME')
@@ -193,8 +194,6 @@ def get_main_catalog(args, index_table):
         cat_name = 'complete_' + args.cat_name.replace('filter', args.file_filter_name[f])
         complete_table[index_table['ORDER']].write(args.main_path + cat_name, format='fits',
                                                    overwrite=True)
-        index_table[index_table['ORDER']].write(cat_name, format='fits',overwrite=True)     
-
 def get_selection_catalog(args, index_table):
     """Make catlog containing info about all galaxies in final catalog.
     Columns are identical to cosmos real galaxy catalog"""
@@ -234,23 +233,6 @@ def get_fits_catalog(args, index_table):
             temp.rename_column('FLUX_RADIUS', 'flux_radius')            
             col = Column(temp['stamp_flux'], name='flux')
             temp.add_column(col)
-            fit_mad_s = np.zeros(len(q))
-            fit_mad_b= np.zeros(len(q))
-            fit_dvc_btt = np.zeros(len(q))
-            use_bulgefit = np.zeros(len(q))
-            viable_sersic = np.zeros(len(q))
-            fit_status = [[1]*5]*len(q)
-            sersicfit = [[0]*8]*len(q)
-            bulgefit = [[0]*16]*len(q)
-            hlr = [[0]*3]*len(q)
-            names = ('fit_mad_s', 'fit_mad_b', 'fit_dvc_btt', 'use_bulgefit')
-            names+= ('viable_sersic', 'fit_status', 'sersicfit', 'bulgefit', 'hlr')
-            dtype =('f8', 'f8', 'f8','i4')
-            dtype+=('i4', 'i4','f8', 'f8', 'f8')
-            tab = [fit_mad_s, fit_mad_b, fit_dvc_btt, use_bulgefit]
-            tab+= [viable_sersic, fit_status, sersicfit, bulgefit, hlr]
-            temp2 = Table(tab, names=names, dtype=dtype)
-            temp = hstack([temp,temp2])
             final_table = vstack([final_table,temp], join_type='inner')
         path = args.main_path + args.out_dir 
         file_name = args.fits_file_name.replace('filter', args.file_filter_name[f])
@@ -265,10 +247,10 @@ def get_in_galsim(args):
             os.remove(fl)
     index_table = assign_num(args)
     for f, filt in enumerate(args.filter_names):
-        get_images(args, index_table, filt, args.file_filter_name[f])
-    get_main_catalog(args, index_table)
-    get_selection_catalog(args, index_table)
-    get_fits_catalog(args, index_table)
+        idx = get_images(args, index_table, filt, args.file_filter_name[f])
+    get_main_catalog(args, idx)
+    get_selection_catalog(args, idx)
+    get_fits_catalog(args, idx)
 
 if __name__ == '__main__':
     import subprocess
