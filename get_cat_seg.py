@@ -31,22 +31,8 @@ def get_cat_seg(args):
     obj_list= args.main_path + seg + '/objects_with_p_stamps.txt' 
     objs = np.loadtxt(obj_list, dtype="int")
     temp = cat[objs]
-    print " Adding required columns"
-    col = Column(np.zeros(len(temp)),name='NOISE_MEAN',dtype='float', description = 'Mean of background noise' )
-    temp.add_column(col)
-    col = Column(np.zeros(len(temp)),name='NOISE_VARIANCE',dtype='float', description = 'Variance of background noise' )
-    temp.add_column(col)
-    col= Column(np.zeros(len(temp)),name='stamp_flux',dtype='float', description = 'Total flux in the postage stamp' )
-    temp.add_column(col)
-    col= Column(np.zeros(len(temp)),name='sn_ellip_gauss',dtype='float')
-    temp.add_column(col)
-    col= Column(np.zeros(len(temp)),name='min_mask_dist_pixels',dtype='float')
-    temp.add_column(col)
-    col= Column(np.zeros(len(temp)),name='average_mask_adjacent_pixel_count',dtype='float')
-    temp.add_column(col)
-    col= Column(np.zeros(len(temp)),name='peak_image_pixel_count',dtype='float')
-    temp.add_column(col)
-    print " Adding columns for other catalog information"
+
+    print " Adding columns for additional catalog information"
     # Columns to add values from photometric and redshift catalog
     col= Column(np.ones(len(temp))*-1,name='zphot',dtype='float',
                 description = 'Redshift measured from other catlog')
@@ -107,7 +93,26 @@ def get_cat_seg(args):
         z_c = s[1][ch_q]
         temp['zphot'][c_z] = z_cat['ZBEST'][z_c]
         temp['zphot_err'][c_z] = z_cat['ZERR'][z_c]
-     # Add columns for slection file       
+
+
+    print " Adding required columns for selection catalog"
+    # Add columns for selection catalog. 
+    col = Column(np.zeros(len(temp)),name='NOISE_MEAN',dtype='float', description = 'Mean of background noise' )
+    temp.add_column(col)
+    col = Column(np.zeros(len(temp)),name='NOISE_VARIANCE',dtype='float', description = 'Variance of background noise' )
+    temp.add_column(col)
+    col= Column(np.zeros(len(temp)),name='stamp_flux',dtype='float', description = 'Total flux in the postage stamp' )
+    temp.add_column(col)
+    col= Column(np.zeros(len(temp)),name='sn_ellip_gauss',dtype='float')
+    temp.add_column(col)
+    col= Column(np.zeros(len(temp)),name='min_mask_dist_pixels',dtype='float')
+    temp.add_column(col)
+    col= Column(np.zeros(len(temp)),name='average_mask_adjacent_pixel_count',dtype='float')
+    temp.add_column(col)
+    col= Column(np.zeros(len(temp)),name='peak_image_pixel_count',dtype='float')
+    temp.add_column(col)
+
+    # Add columns for selection file       
     for idx,obj in enumerate(objs):
         path = args.main_path + seg + '/postage_stamps/stamp_stats/'
         stats_file =  path + str(obj) + '_' + filt + '.txt'
@@ -120,6 +125,29 @@ def get_cat_seg(args):
         temp['min_mask_dist_pixels'][idx] = min_dist
         temp['average_mask_adjacent_pixel_count'][idx] = avg_flux
         temp['peak_image_pixel_count'][idx] = peak_val
+
+    print " Adding columns for fits catalog information"
+    # Add columns for selection catalog. If fits is permormed, read here
+    If fits is performed change script below.
+    fit_mad_s = np.zeros(len(temp))
+    fit_mad_b= np.zeros(len(temp))
+    fit_dvc_btt = np.zeros(len(temp))
+    use_bulgefit = np.zeros(len(temp))
+    viable_sersic = np.zeros(len(temp))
+    fit_status = [[1]*5]*len(temp)
+    sersicfit = [[0]*8]*len(temp)
+    bulgefit = [[0]*16]*len(temp)
+    hlr = [[0]*3]*len(temp)
+    names = ('fit_mad_s', 'fit_mad_b', 'fit_dvc_btt', 'use_bulgefit')
+    names+= ('viable_sersic', 'fit_status', 'sersicfit', 'bulgefit', 'hlr')
+    dtype =('f8', 'f8', 'f8','i4')
+    dtype+=('i4', 'i4','f8', 'f8', 'f8')
+    tab = [fit_mad_s, fit_mad_b, fit_dvc_btt, use_bulgefit]
+    tab+= [viable_sersic, fit_status, sersicfit, bulgefit, hlr]
+    temp2 = Table(tab, names=names, dtype=dtype)
+    temp = hstack([temp,temp2])
+
+
     print "Catalog with pstamps saved at ", new_cat_name
     temp.write(new_cat_name, format='fits')  
 
