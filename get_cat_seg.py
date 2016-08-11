@@ -77,7 +77,7 @@ def get_cat_seg(args):
     if args.phot_cat_file_name is not 'None':
         phot_cat = Table.read(args.phot_cat_file_name, format="fits")
         #### set column names as based on the photometric catalog  
-        p_ra = 'ACSDEC_'+f_str
+        p_ra = 'ACSRA_'+f_str
         p_dec = 'ACSDEC_'+f_str
         p_x = phot_cat[p_ra]*np.cos(np.radians(phot_cat[p_dec]))
         p_y = phot_cat[p_dec]
