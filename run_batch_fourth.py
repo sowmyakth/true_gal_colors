@@ -12,10 +12,10 @@ def main(args):
             print 'SEG ID: ', seg_id, ' filter: ', filt 
             outfile = 'outfile/out_4_{0}.txt'.format(seg_id)
             com1='/nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_full2/'
-            com = 'python get_cat_seg.py --seg_id='+ seg_id+ ' --out_path='+ com1
+            com = 'python get_cat_seg.py --seg_id='+ seg_id+ ' --main_path='+ com1
             final_args =['bsub', '-W' , '0:35','-o', outfile, com]
             final_args.append("--filter="+ filt)
-            final_args.append("--file_filter_name"+ args.file_filter_name[f]    
+            final_args.append("--file_filter_name="+ args.filter_file_names[f])    
             subprocess.call(final_args)
               
 

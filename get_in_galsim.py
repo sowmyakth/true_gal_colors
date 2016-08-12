@@ -154,8 +154,10 @@ def get_main_catalog(args, index_table):
     """Make catlog containing info about all galaxies in final catalog.
     Columns are identical to cosmos real galaxy catalog"""
     cat_name = 'index_' + args.cat_name.replace('filter', 'all')
-    index_table[index_table['ORDER']].write(cat_name, format='fits',
+    path = args.main_path + args.out_dir 
+    index_table[index_table['ORDER']].write(path + cat_name, format='fits',
                                             overwrite=True)
+    print 'Saving index catalog at', cat_name
     print "Creating main catalog" 
     all_seg_ids = np.loadtxt(args.seg_list_file, delimiter=" ",dtype='S2')
     for f, filt in enumerate(args.filter_names):

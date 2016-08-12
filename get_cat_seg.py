@@ -18,7 +18,7 @@ to the catalog, replacing the fake values set here.
 import subprocess
 import numpy as np
 import os
-from astropy.table import Table, Column
+from astropy.table import Table, Column,hstack
 from scipy import spatial
 
 def get_cat_seg(args):
@@ -133,7 +133,7 @@ def get_cat_seg(args):
 
     print " Adding columns for fits catalog information"
     # Add columns for selection catalog. If fits is permormed, read here
-    If fits is performed change script below.
+    #If fits is performed change script below.
     fit_mad_s = np.zeros(len(temp))
     fit_mad_b= np.zeros(len(temp))
     fit_dvc_btt = np.zeros(len(temp))

@@ -108,10 +108,14 @@ def get_snr(image_data, b_var):
     img = galsim.Image(image_data)
     try:
         res = galsim.hsm.FindAdaptiveMom(img)
-        aperture_noise = np.sqrt(b_var*2.*np.pi*(res.moments_sigma**2))
+        aperture_noise = float(np.sqrt(b_var*2.*np.pi*(res.moments_sigma**2)))
         sn_ellip_gauss = res.moments_amp / aperture_noise
+        print 'RES', res.moments_amp, res.moments_sigma
+        print 'SNR', sn_ellip_gauss
     except:
+        print 'SNR manually set'
         sn_ellip_gauss = -10.
+    print 'SNR', sn_ellip_gauss
     return sn_ellip_gauss
 
 def get_min_dist(x0,y0,arr):
@@ -208,7 +212,7 @@ def clean_pstamp(args):
             continue
         # Objects seg map covers entire pstamp, no blank region
         # manually set output values so it fails selection tests later
-        if len(bl)==0:
+        if (len(bl)<=1):
             print "Ignore object"
             peak_val = 0
             min_dist = 0.
@@ -225,11 +229,13 @@ def clean_pstamp(args):
         # No other object present                
         if len(oth_segs)==0 :
             print "No other object"
+            print len(bl)
             min_dist = 999.99      
             pix_near_dist = [shape[0]/2, shape[1]/2]
             avg_flux = 0.
             snr = get_snr(im_dat, b_std**2)
             info = [b_mean, b_std, np.sum(im_dat), min_dist, avg_flux, peak_val, snr ]
+            print info
             np.savetxt(params.path + 'stamp_stats'+'/'+ params.num + '_'+ filt + '.txt', info)
             new_im_name = params.path + filt + '_'+ params.seg_id + '_'+ params.num +'_gal.fits'
             pyfits.writeto(new_im_name, im_dat, im_hdr, clobber=True)
