@@ -21,7 +21,7 @@ Since the noise in the image is not uncorrelated (dut to multidrizzle), the snr
 computed from sextractor needs is modified by parameter scale factr --sf.
 The detected objects are then classified into stars and galaxies depending on
 their position in the MAG_AUTO Vs MU_MAX plot. The seperation line is set 
-by star_galaxy_weights. Objects that lie on image edge are masked. Region around
+by star_galaxy_params. Objects that lie on image edge are masked. Region around
 saturated stars are masked: masked region set by filter_spike_params.Regions 
 that were manually observed to have artefacts (eg.ghosts) and are to be masked 
 are input as manual_mask_file. final catalog is renumbered begining from 0.
@@ -79,7 +79,7 @@ class Main_param:
         else:
             self.wht_path = args.wht_path
         self.spike_params,self.zero_point_mag= {}, {}
-        self.gain, self.star_galaxy_weights   = {}, {}
+        self.gain, self.star_galaxy_params   = {}, {}
         self.data_files, self.wht_files = {}, {}
         for i in range(len(self.filters)):
             filter1 = self.filters[i]
@@ -87,7 +87,7 @@ class Main_param:
             self.wht_files[filter1] = self.wht_path + filter1 + '/' + self.wht_name.replace('filter',filter1)
             self.spike_params[filter1] = args.filter_spike_params[i] 
             self.zero_point_mag[filter1] = args.zero_point_mag[i]
-            self.star_galaxy_weights[filter1] = args.star_galaxy_weights[i]
+            self.star_galaxy_params[filter1] = args.star_galaxy_params[i]
             self.gain[filter1] = args.gain[i]
         self.det_im_file = self.file_path + self.det_im_file
         self.det_wht_file = self.wht_path + self.det_wht_file
@@ -582,7 +582,7 @@ class GalaxyCatalog:
                           out_name, out_dir)
             os.remove(new_seg_map)
         # star-galaxy seperation
-        self.classification(self.params.star_galaxy_weights, out_dir)   
+        self.classification(self.params.star_galaxy_params, out_dir)   
         # Mark objects at the boundary and in diffraction spikes 
         self.cleanup_catalog(out_dir) 
         # pick stars for PSF estimation   
@@ -606,7 +606,7 @@ if __name__ == '__main__':
                         [Default:'/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip] ")
     parser.add_argument('--out_path', default= '/nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_full/',
                         help="Path to where you want the output stored \
-                        [Default: /nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_full]")
+                        [Default: /nfs/slac/g/ki/ki19/deuce/AEGIS/AEGIS_full/]")
     parser.add_argument('--file_name', default='EGS_10134_seg_id_acs_wfc_filter_30mas_unrot_drz.fits',
                         help="File name of measurement image with 'seg_id' & \
                         'filter' in place of image segment id and filter \
@@ -638,10 +638,11 @@ if __name__ == '__main__':
                         default= [(0.0350087,64.0863,40.0,2.614),
                                   (0.0367020,77.7674,40.0,2.180)],
                         help="Params of diffraction spikes in each filter. \
-                        They must be in the same order as filter_names \
+                        They must be in the same order as filter_names. \
+                        [slope(pixels/ADU),intercept(pixels),width(pixels),angle(degrees)] \
                         [Default: [(0.0350087,64.0863,40.0,2.614),  \
                         (0.0367020,77.7674,40.0,2.180)]]")
-    parser.add_argument('--star_galaxy_weights', 
+    parser.add_argument('--star_galaxy_params', 
                         default= [(19.4, 15.508, 0.945), (18.9, 14.955, 0.98)],
                         help="Star galaxy seperation line parametrs \
                         [Default:(x_div, y_div, slope)]")
