@@ -21,13 +21,19 @@ The code can be implemented to any HST field data in multiple filters. It takes 
 Note: For faster computation, most scripts are writeen to be run on each indivual image tile, so that multiple segments can be analyzed simultaneously with multiple processors.
 
 The entire pipeline contains 6 scripts that are to be run one after another in the order:
+
 1. get_objects.py : Script to detect objects in a given image (segment) using sextractor and makes a catalog. Star-Galaxy seperation, masking objects at tile bondaries, near diffraction spikes or manual masks is done here. Stars for PSF estimation are also identified 
-2. remove_multi.py : Script to remove multiple detections of the same object in overlapping segments. Note: This script is to be run once to check multiple detections over all segments.
+2. remove_multi.py : Script to remove multiple detections of the same object in overlapping segments. **Note: This script is to be run once to check multiple detections over all segments.**
 3. get_psf: Computes the focal length of the telescope for a given image, and uses that to estimate the PSF. Postage stamps of galaxies and PSF  are aslo drawn (called in get_pstamps.py).
 4. clean_pstamp.py: Identifies multiple objects in the postage stamp of a galaxy and replaces 
-the other object with noise  
+the other object with noise.  
+5. get_cat_seg.py: For each segment, creates a catalog with entries only for the objects with postage stamps that will appear in the main catalog. Information from other catalogs are aslo added in this step.
+6. get_in_galsim.py: Write complete catalog into files that can be opened with galsim.Realgalaxy()
+and galsim.COSMOSCatalog().
 
- Additional scripts are also included which were used to run the above scripts through batch jobs , for faster computation. Note: the script is written to be run on SLAC batch farm with LSF batch system. You might have to tweak it dependeing on how you run
+ Additional scripts are also included which were used to run the above scripts through batch jobs , for faster computation. Note: the script is written to be run on SLAC batch farm with LSF batch system. You might have to tweak it dependeing on how you run.
+
+ 1.run_batch
 
 ### Script: The script is run entirely in python. Make sure the following modules are loaded:
 galsim, numpy, astropy, asciidata, subprocess, os, scipy

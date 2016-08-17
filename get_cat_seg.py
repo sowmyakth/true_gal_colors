@@ -1,16 +1,16 @@
 """Program Number: 5
 Reduces the full catalog to objects that have postage stamps for each segment.
 Then adds a few columns that are required for the main catalog. If a redshift 
-and photometric catalog are provided, then objects from main cotaog are matched
+and photometric catalog are provided, then objects from main catalog are matched
 to the photometric and redshift catlog, and redhsift and magnitude values are 
 saved. 
 
 Note: If no photomteric or redshift catalog, set the input argument for the 
 file names to be 'None'. The column names of these two catalogs in the code
-need to be chnaged to their names in the input.
+need to be changed to their names in the input.
 
 Since paramteric fits were not done for the galaxies, the parameter values 
-are manually set. If the step is performed read the file below and save that
+are manually set. If the fits step is performed read the file below and save that
 to the catalog, replacing the fake values set here.
 
 """
