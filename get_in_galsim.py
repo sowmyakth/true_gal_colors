@@ -40,8 +40,8 @@ if the postage stamp is good. Fits file contains parametric fit values of each
 galaxy. Since no fits were performed here, fake values are entered.    
 
 Output:
-Files with galaxy images (in multiple bands), files with galaxy images (in 
-multiple bands), main file, selection file and fits file.
+Fits files with galaxy images (in multiple bands), files with psf images (in 
+multiple bands), main catalog file, selection file and fits file.
 
 """
 from astropy.io import fits
