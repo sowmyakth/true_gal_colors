@@ -23,7 +23,7 @@ Note: For faster computation, most scripts are writeen to be run on each indivua
 The entire pipeline contains 6 scripts that are to be run one after another in the order:
 
 1. get_objects.py : Script to detect objects in a given image (segment) using sextractor and makes a catalog. Star-Galaxy seperation, masking objects at tile bondaries, near diffraction spikes or manual masks is done here. Stars for PSF estimation are also identified 
-2. remove_multi.py : Script to remove multiple detections of the same object in overlapping segments. **Note: This script is to be run once to check multiple detections over all segments.**
+2. remove_multi.py : Script to remove multiple detections of the same object in overlapping segments. *Note: This script is to be run once to check multiple detections over all segments.*
 3. get_psf: Computes the focal length of the telescope for a given image, and uses that to estimate the PSF. Postage stamps of galaxies and PSF  are aslo drawn (called in get_pstamps.py).
 4. clean_pstamp.py: Identifies multiple objects in the postage stamp of a galaxy and replaces 
 the other object with noise.  
