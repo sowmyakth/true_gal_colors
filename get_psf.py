@@ -1,6 +1,6 @@
 """ Program Number: 3
 Computes the focal length of the telescope for a given image, and uses that to
-estimate the PSF. Postage stapms are drawn for selected galaxies (called
+estimate the PSF. Postage stamps of select galaxies and their PSF are also drawn.(called
 in get_pstamps.py)
 
 Requirements: A catalog with sextractor output for the given tile(segment), List
