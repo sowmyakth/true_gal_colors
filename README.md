@@ -44,7 +44,7 @@ and galsim.COSMOSCatalog().
 ### Script: 
 The script is run entirely in python. Make sure the following modules are loaded:
 galsim, numpy, astropy, asciidata, subprocess, os, scipy
-The detection and measuremnt is prformed with [SExtractor] <http://www.astromatic.net/software/sextractor>
+The detection and measuremnt is prformed with [SExtractor](http://www.astromatic.net/software/sextractor)
 
 ## Output:
 Fits files with galaxy images (in multiple bands), files with psf images (in 
