@@ -6,11 +6,15 @@ In ALL filters:
 * Is NOT in any masked region
 * Is NOT detected in other segments
 * SNR >0
+In ONE filter (The last filter in the input list)
 * magnitude<= 25.2
 
 Rectangular postage stamps are made for each selected galaxy. Size of pstamps
-determined using eqn 2,3 Hausler 2007
-psf pstmp size 20*20
+determined using eqn 2,3 Hausler 2007. XSIZE & YSIZE are individually 
+computed for each band and the highest values are picked as dimensions of the 
+postage stamps in both bands.
+
+PSF pstmp size 20*20
 
 PSF:
 The focus of image is set to Mode of focus while varying number of stars

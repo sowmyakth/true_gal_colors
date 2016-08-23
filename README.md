@@ -9,7 +9,7 @@ The code can be implemented to any HST field data in multiple filters. It takes 
 * Co-added images 
 * Tiny Tim Images: Images of PSF at different location on the field for different focus length. The PSF field files for the multiple filters are in seperate folders.
 * File with regions for manual masks. These are regions that upon visual inspection were found to contain artefacts Eg: ghosting, and hence need to be masked out. The ext file contains segment ID, filter, x and y cordinates of the points on a quadrilateral that mark the region to be masked, file name of science image with region to be masked. Note: script identifies and masks regions near saturated stars, hence need not be included in manual masks.
-* Noise map: Fits file with covariance matrix of noise feild for each band. Visually identify blank regions in the science image and compute covariance matrix.(See ipython notebook)
+* Noise map: Fits file with covariance matrix of noise feild for each band. Visually identify blank regions in the science image and compute covariance matrix.(See ipython notebook check_empty_regions.ipynb)
 * Other catalogs (OPTIONAL): The script also has provision to add information from other catalog to the main catalog. eg:redshift
 
 ### Input Parmeters for script:
@@ -33,10 +33,18 @@ and galsim.COSMOSCatalog().
 
  Additional scripts are also included which were used to run the above scripts through batch jobs , for faster computation. Note: the script is written to be run on SLAC batch farm with LSF batch system. You might have to tweak it dependeing on how you run.
 
- 1.run_batch
+ 1. additional.py : Additional code to get list of seg ids, coadd images in multiple bands and convert weight map to rms map.
+ 2. run_batch_first.py : Script to run get_objects.py over all segments.
+ 3. run_batch_second.py : Script to run get_psf.py over all segments.
+ 4. run_batch_third.py : Script to run run_clean_seg.py  over all segments.
+ 5. run_clean_seg.py : Script tp run clean_pstamp.py over all pstamps for a given segment
+ 6. run_batch_third_again.py : Script to run clean_pstamp.py over all pstamps whose jobs failed.
+ 7. run_batch_fourth.py : Script to run get_cat_seg.py  over all segments.
 
-### Script: The script is run entirely in python. Make sure the following modules are loaded:
+### Script: 
+The script is run entirely in python. Make sure the following modules are loaded:
 galsim, numpy, astropy, asciidata, subprocess, os, scipy
+The detection and measuremnt is prformed with [SExtractor] <http://www.astromatic.net/software/sextractor>
 
 ## Output:
 Fits files with galaxy images (in multiple bands), files with psf images (in 

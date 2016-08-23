@@ -1,16 +1,3 @@
-# Run this first
-# Code to get list of gement ids. 
-# Will depend on naming convention of data used
-#import glob
-#names = glob.glob('*drz.fits')
-#seg_id=[]
-#for name in names:
-#    id = name[10:12]
-#    seg_id.append(id)
-#np.savetxt('/nfs/slac/g/ki/ki19/deuce/AEGIS/unzip/seg_ids.txt', seg_id, delimiter=" ", fmt="%s")
-#
-
-
 import subprocess
 import numpy as np
 import glob

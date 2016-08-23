@@ -1,8 +1,8 @@
 """ Program Number: 2
 
 Program to remove multiple detections of an object in overlapping segments.
-Searches of objects within 2 arcec. Object with smaller flag or higher SNR 
-is kept. Every pair of segments are checked for overlapping objects once
+Searches of objects within 2 arcseconds. Object with smaller flag or higher SNR 
+is kept. Every pair of segments are checked for overlapping objects once.
 """
 from astropy.table import Table,Column
 from scipy import spatial
