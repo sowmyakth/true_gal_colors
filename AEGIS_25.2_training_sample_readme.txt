@@ -36,7 +36,7 @@ GAL_HDU: HDU containing the image of this galaxy in the file called GAL_FILENAME
 
 PSF_HDU: HDU containing the image of the PSF for this galaxy in the file called PSF_FILENAME.
 
-PIXEL_SCALE: pixel scale for the galaxy and PSF images in arcsec (0.03 in all cases).
+PIXEL_SCALE: pixel scale for the galaxy and PSF images in arcsec (0.03 for all bands).
 
 NOISE_MEAN: mean value of the pixels in the image that do not contain the galaxy.
 
@@ -61,15 +61,13 @@ contains the following fields:
 
 IDENT: AEGIS identifier.
 
-MAG_AUTO: magnitude (MAG_AUTO calculated from sextractor).
+MAG_AUTO: magnitude (MAG_AUTO computed by SExtractor).
 
-FLUX_RADIUS: half-light radius for the PSF-convolved object (sam as flux_radius from the AEGIS catalog),
-in units of pixels.
+FLUX_RADIUS: half-light radius for the PSF-convolved object (same as flux_radius from the AEGIS catalog), in units of pixels.
 
-ZPHOT: Photometric redshift from the DEEP2 galaxy redshift catalog Data Realase 4 (Newman et al. 2003), as measured using the galaxy templates.
+ZPHOT: Photometric redshift from the DEEP2 galaxy redshift catalog Data Realase 4 (Newman et al. 2003).
 
-SERSICFIT: An array of 8 numbers which are the results of fitting the galaxy image to a single
-Sersic profile with free n.  The array entries are:
+SERSICFIT: An array of 8 numbers which are the results of fitting the galaxy image to a single Sersic profile with free n.  The array entries are:
 
        SERSICFIT[0]: I, defined as the intensity at the half-light radius.
        SERSICFIT[1]: R_{1/2}, the half-light radius measured along the major axis, in pixels.
