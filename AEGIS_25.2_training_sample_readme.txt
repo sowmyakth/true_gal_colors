@@ -3,7 +3,7 @@ random(fair) subsample of all galaxies in the AEGIS field in
 F606w and F814W bands. 
 
 NOTE: The fields in the catalog are identical to real_galaxy_catalog in GalSim. 
-However, some parts of the analysis were not performed(eg. parametric fits). 
+However, some parts of the analysis were not performed(e.g. parametric fits). 
 Hence those values were manually set, and do not have physical meaning   
 
 (1) The catalog(s) itself is AEGIS_galaxy_catalog_I(V)_25.2.fits.  These files 
@@ -48,7 +48,7 @@ AEGIS_galaxy_PSF_images_I(V)_25.2_n?.fits. The number that goes in place of
 the "?" ranges from 0 to 29.
 
 
-(3) *Parametric fits were not perfomed and the values in the table were manually set.*
+(3) *Parametric fits have not been performed and the values in the table were manually set.*
 A catalog containing information about the fits to the galaxies in 
 AEGIS_galaxy_catalog_I(V)_25.2.fits, using the fitting code from Lackner & 
 Gunn (2012, MNRAS, 421, 2277) as described in the GREAT3 challenge handbook. 
