@@ -44,9 +44,9 @@ NOISE_MEAN: mean value of the pixels in the image that do not contain the galaxy
 NOISE_VARIANCE: variance of the pixel values for pixels in the image that do not contain the galaxy.
 
 
-(2) The files containing galaxy and PSF images are
-AEGIS_galaxy_images_[VI]_25.2_n?.fits. The number that goes in place of the "?"
-ranges from 0 to 29.
+(2) The files containing galaxy and PSF images are in
+AEGIS_galaxy_images_[VI]_25.2_n?.fits and AEGIS_galaxy_PSF_images_[VI]_25.2_n?.fits.
+The number that goes in place of the "?" ranges from 0 to 29.
 
 
 (3) *Parametric fits have not been performed and the values in the table were manually set.*
