@@ -1,5 +1,6 @@
 This README file describes the AEGIS F814W<25.2 training sample, which is a
-randomly ordered subsample of galaxies in the AEGIS field with AB magnitude<25.2, in F606W(V) and F814W(I) bands.
+randomly ordered subsample of galaxies in the AEGIS field with AB magnitude<25.2,
+in F606W(V) and F814W(I) bands.
 
 NOTE: The columns in the catalog are those expected by galsim.RealGalaxyCatalog.
 However, some parts of that analysis, i.e parametric fits, were not performed.
@@ -44,7 +45,8 @@ NOISE_VARIANCE: variance of the pixel values for pixels in the image that do not
 
 
 (2) The files containing galaxy and PSF images are
-AEGIS_galaxy_images_[VI]_25.2_n?.fits and AEGIS_galaxy_PSF_images_[VI]_25.2_n?.fits. The number that goes in place of the "?" ranges from 0 to 29.
+AEGIS_galaxy_images_[VI]_25.2_n?.fits and AEGIS_galaxy_PSF_images_[VI]_25.2_n?.fits. The number that 
+goes in place of the "?" ranges from 0 to 29.
 
 
 (3) *Parametric fits have not been performed and the values in the table were manually set.*
@@ -62,7 +64,8 @@ IDENT: AEGIS identifier.
 
 MAG_AUTO: magnitude (MAG_AUTO computed by SExtractor).
 
-FLUX_RADIUS: half-light radius for the PSF-convolved object (same as flux_radius from the AEGIS catalog), in units of pixels.
+FLUX_RADIUS: half-light radius for the PSF-convolved object (same as flux_radius from the AEGIS catalog),
+in units of pixels.
 
 ZPHOT: Photometric redshift from the DEEP2 galaxy redshift catalog Data Realase 4 (Newman et al.
     2003).
@@ -100,7 +103,8 @@ sn_ellip_gauss: SNR of the galaxy measured with an elliptical gaussian filter.
 
 min_mask_dist_pixels: Distance from the center of postage stamp tp the nearest masked pixel.
 
-average_mask_adjacent_pixel_count: Average pixel value of the 3*3 pixel region around the nearest masked pixel, before masking.
+average_mask_adjacent_pixel_count: Average pixel value of the 3*3 pixel region around the nearest 
+masked pixel, before masking.
 
 peak_image_pixel_count: Highest pixel value of central object in postage stamp.
 
