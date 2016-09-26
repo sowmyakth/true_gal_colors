@@ -9,21 +9,23 @@ galsim modules are:
 4) Files with galaxy images as hdu (1000 objects per file)
 5) Files with psf images as hdu (1000 objects per file)
 
-Seperate files are made for each band. 
+Separate files are made for each band. 
 
 Requirements: 
-Postage stamp images of galaxy and psf in multiple bands, file
-with list of names of differnt tiles, catalog containing information on each galaxy
-(in multiple bands). Each tile must have list with identification number of 
-galaxeies with postage stamps.
+Postage stamp images of galaxy and psf in multiple bands, catalog containing
+information on each galaxy (in multiple bands). Each tile must have a saved 
+file listing the identification number of galaxies with postage stamps.
 
-Assign Number:
+The script has 3 steps:
+
+1) Assign Number:
 Assign individual identification number ('IDENT') to each object in catalog. We 
 also want the catalog objects to be randomly shuffled. A new column ('ORDER')
-gives the position of the objectt in the final shuffled catalog. Segment (tile) ID in which that object was detected, number in that 
+gives the position of the objectt in the final shuffled catalog. Segment (tile)
+ID in which that object was detected, number in that 
 segment, individual identification number, position in final catalog, number
 of the fits file where the postage stamps are saved, hdu number in that fits 
-file of the image are saved in index table.
+file of the image are saved in index table are saved in index_table.
 
 Save Images:
 Postage stamp images of galaxies and psf, in multiple bands, are stored in 
@@ -31,7 +33,7 @@ fits files. Each object is saves as the image HDU, whose number is mentioned
 in the main catalog. The HDU number od galaxy and psf are same. Each fits file 
 has 1000 images.
 
-Catalogs: 3 output catalogs are produced with the same number of rows. Each
+Save Catalogs: 3 output catalogs are produced with the same number of rows. Each
 catalog has a column 'IDENT' which is the unique identification number of 
 each galaxy. Main catalog contains basic information of the galaxy, along 
 with location of image fits file and noise correlation function. The selection
@@ -85,7 +87,7 @@ def assign_num(args):
 
 def get_images(args, index_table,
                filt, filt_name):
-    """Make fits files of galsxy and psf postage stamps"""
+    """Make fits files of galaxy and psf postage stamps"""
     print "Saving images"
     n = np.max(index_table['FILE_NUM'])
     print "Total number of files will be ",n
@@ -119,9 +121,11 @@ def get_images(args, index_table,
     index_table.sort('ORDER')
     index_table.write(args.main_path + cat_name, format='fits',
                       overwrite=True)
+    print 'Saving index catalog at', cat_name
     return index_table
   
 def main_table():
+    """Coloumns in main catalog"""
     names = ('IDENT', 'RA', 'DEC', 'MAG', 'BAND', 'WEIGHT', 'GAL_FILENAME')
     names+= ('PSF_FILENAME', 'GAL_HDU', 'PSF_HDU', 'PIXEL_SCALE')
     names+= ('NOISE_MEAN', 'NOISE_VARIANCE', 'NOISE_FILENAME', 'stamp_flux')
@@ -132,6 +136,7 @@ def main_table():
     return table
     			
 def selection_table():
+    """Coloumns in selection catalog"""
     names = ('IDENT', 'dmag', 'sn_ellip_gauss', 'min_mask_dist_pixels')
     names+= ('average_mask_adjacent_pixel_count', 'peak_image_pixel_count')
     dtype = ('i4', 'f8', 'f8', 'f8', 'f8', 'f8')
@@ -139,6 +144,7 @@ def selection_table():
     return table
 
 def fits_table():
+    """Coloumns in parametric fit catalog"""
     names = ('IDENT', 'mag_auto', 'flux_radius', 'zphot','fit_mad_s', 'fit_mad_b')
     names+= ('fit_dvc_btt', 'use_bulgefit', 'viable_sersic', 'flux')
     dtype = ('i4', 'f8', 'f8', 'f8', 'f8','f8')
@@ -155,11 +161,9 @@ def fits_table():
     return table
 
 def get_main_catalog(args, index_table):
-    """Make catlog containing info about all galaxies in final catalog.
-    Columns are identical to cosmos real galaxy catalog"""
-    print 'Saving index catalog at', cat_name
+    """Makes main catalog containing information on all selected galaxies.
+    Columns are identical to COSMOS Real Galaxy catalog"""
     print "Creating main catalog" 
-    print index_table[0]
     all_seg_ids = np.loadtxt(args.seg_list_file, delimiter=" ",dtype='S2')
     for f, filt in enumerate(args.filter_names):
     	final_table = main_table()
@@ -200,8 +204,8 @@ def get_main_catalog(args, index_table):
         complete_table[ord_indx].write(args.main_path + cat_name, format='fits',
                                                    overwrite=True)
 def get_selection_catalog(args, index_table):
-    """Make catlog containing info about all galaxies in final catalog.
-    Columns are identical to cosmos real galaxy catalog"""
+    """Makes catalog containing information that can be used to select good galaxies.
+    Columns are identical to COSMOS Real Galaxy catalog"""
     print "Creating selection catalog" 
     all_seg_ids = np.loadtxt(args.seg_list_file, delimiter=" ",dtype='S2')
     for f, filt in enumerate(args.filter_names):
@@ -224,8 +228,8 @@ def get_selection_catalog(args, index_table):
         print "Savings fits file at ", path + file_name
 
 def get_fits_catalog(args, index_table):
-    """Make catlog containing info about all galaxies in final catalog.
-    Columns are identical to cosmos real galaxy catalog"""   
+    """Makes catalog containing information about parametric fits to the galaxies.
+    Columns are identical to COSMOS Real Galaxy catalog"""   
     print "Creating fits catalog" 
     all_seg_ids = np.loadtxt(args.seg_list_file, delimiter=" ",dtype='S2')
     for f, filt in enumerate(args.filter_names):
@@ -249,6 +253,8 @@ def get_fits_catalog(args, index_table):
         final_table[ord_indx].write(path + file_name, format='fits',
                                                 overwrite=True)
 def get_in_galsim(args):
+    """Saves Postage stamps and final catalogs in a format that can be read by
+     galsim modules"""
     if os.path.isdir(args.main_path + args.out_dir) is False:
             subprocess.call(["mkdir", args.main_path + args.out_dir])
     else:
