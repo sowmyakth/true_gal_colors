@@ -1,5 +1,5 @@
 This README file describes the AEGIS F814W<25.2 training sample, which is a
-randomly ordered subsample of galaxies in the AEGIS field with AB magnitude<25.2, in F606W(V) and F814W(I) bands.
+randomly ordered sample of galaxies in the AEGIS field with AB magnitude<25.2, in F606W(V) and F814W(I) bands.
 
 NOTE: The columns in the catalog are those expected by galsim.RealGalaxyCatalog.
 However, some parts of that analysis, i.e parametric fits, were not performed.
