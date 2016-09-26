@@ -33,13 +33,18 @@ fits files. Each object is saves as the image HDU, whose number is mentioned
 in the main catalog. The HDU number od galaxy and psf are same. Each fits file 
 has 1000 images.
 
-Save Catalogs: 3 output catalogs are produced with the same number of rows. Each
-catalog has a column 'IDENT' which is the unique identification number of 
-each galaxy. Main catalog contains basic information of the galaxy, along 
-with location of image fits file and noise correlation function. The selection
-catalog has parametrs that will be used to by galsim.COSMOSCatalog to determine 
-if the postage stamp is good. Fits file contains parametric fit values of each
-galaxy. Since no fits were performed here, fake values are entered.    
+Save Catalogs: 3 output catalogs (in format required by GalSim modules) are 
+produced with the same number of rows. Each catalog has a column 'IDENT' 
+which is the unique identification number of each galaxy. Main catalog 
+contains basic information of the galaxy, along with location of image 
+fits file and noise correlation function. The selection catalog has parameters
+that will be used to by galsim.COSMOSCatalog to determine  if the postage 
+stamp is good. Fits file contains parametric fit values of each galaxy. 
+Since no fits were performed here, fake values are entered. 
+
+The script also saves a complete catalog with all the SExtractor output fields,
+as well as those in the 3 final catalogs mentioned above. This catalog is saved
+outside out_dir.
 
 Output:
 Fits files with galaxy images (in multiple bands), files with psf images (in 
